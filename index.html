@@ -16,7 +16,8 @@
         .page-content.active { display: block; }
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); }
         .modal-content { background: white; margin: 5vh auto; padding: 0; border-radius: 24px; width: 95%; max-width: 550px; position: relative; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); }
-        .filter-btn.active { background-color: #1d4ed8; color: white; border-color: #1d4ed8; }
+        /* 讓日曆橫跨條更美觀 */
+        .fc-event { cursor: pointer; border-radius: 4px !important; padding: 2px 4px !important; }
     </style>
 </head>
 <body class="bg-[#F1F5F9] text-slate-800">
@@ -74,12 +75,7 @@
                 <aside class="w-full lg:w-64 space-y-4">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h4 class="font-black mb-4 text-sm text-slate-400 uppercase tracking-widest">篩選條件</h4>
-                        <div class="space-y-3">
-                            <div>
-                                <p class="text-xs font-bold text-slate-400 mb-2">科別</p>
-                                <div class="flex flex-wrap gap-2" id="filter-cate"></div>
-                            </div>
-                        </div>
+                        <div class="space-y-3" id="filter-cate"></div>
                     </div>
                 </aside>
                 <div class="flex-1 bg-white p-6 rounded-3xl shadow-xl border border-white" id="full-calendar"></div>
@@ -96,7 +92,6 @@
         
         <div id="page-search" class="page-content text-center py-20 text-slate-400 italic underline">搜尋功能開發中...</div>
         <div id="page-fav" class="page-content text-center py-20 text-slate-400 italic underline">收藏功能開發中...</div>
-
     </main>
 
     <div id="eventModal" class="modal" onclick="closeModal()">
@@ -150,13 +145,9 @@
         }
 
         function renderHome() {
-            // 精選活動 (前三個)
             document.getElementById('featured-grid').innerHTML = allEvents.slice(0, 3).map(ev => createCard(ev, 'grid')).join('');
-            // 有積分
             document.getElementById('credit-list').innerHTML = allEvents.filter(e => parseFloat(e.credit) > 0).slice(0, 4).map(ev => createCard(ev, 'row')).join('');
-            // 線上
             document.getElementById('online-list').innerHTML = allEvents.filter(e => e.type.includes('線上')).slice(0, 4).map(ev => createCard(ev, 'row')).join('');
-            // 最新更新 (倒序)
             document.getElementById('recent-updates').innerHTML = [...allEvents].reverse().slice(0, 3).map(ev => `
                 <div class="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer" onclick="openEvent('${ev.id}')">
                     <span class="text-sm font-bold text-slate-800">${ev.title}</span>
@@ -178,7 +169,7 @@
                                 <span class="block text-4xl font-black text-blue-600 group-hover:scale-110 transition-transform">${day}</span>
                                 <span class="block text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">${month}月</span>
                             </div>
-                            <div class="space-y-3">
+                            <div class="space-y-3 text-left">
                                 <div class="flex flex-wrap gap-2">
                                     <span class="bg-blue-50 text-blue-700 text-[10px] px-3 py-1 rounded-full font-black tracking-wider uppercase">${ev.cate}</span>
                                     ${ev.credit > 0 ? `<span class="bg-orange-50 text-orange-600 text-[10px] px-3 py-1 rounded-full font-black tracking-wider">${ev.credit} 學分</span>` : ''}
@@ -196,7 +187,7 @@
                         <span class="text-lg font-black text-slate-700">${day}</span>
                         <span class="text-[8px] text-slate-400 font-bold uppercase">${month}月</span>
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 text-left">
                         <h4 class="font-bold text-sm text-slate-800 truncate">${ev.title}</h4>
                         <p class="text-[10px] text-slate-400 font-medium">${ev.org} · ${ev.time}</p>
                     </div>
@@ -205,7 +196,6 @@
         }
 
         function renderList() {
-            // 列表頁面：依日期分群
             const groups = allEvents.reduce((acc, ev) => {
                 const d = ev.date;
                 if (!acc[d]) acc[d] = [];
@@ -239,9 +229,12 @@
 
         function renderFilters() {
             const cates = [...new Set(allEvents.map(e => e.cate))];
-            document.getElementById('filter-cate').innerHTML = cates.map(c => `
-                <button class="filter-btn text-[10px] font-black border-2 border-slate-100 px-3 py-1.5 rounded-xl hover:border-blue-200 transition-all uppercase tracking-wider">${c}</button>
-            `).join('');
+            document.getElementById('filter-cate').innerHTML = `
+                <p class="text-xs font-bold text-slate-400 mb-2">科別</p>
+                <div class="flex flex-wrap gap-2">
+                    ${cates.map(c => `<button class="filter-btn text-[10px] font-black border-2 border-slate-100 px-3 py-1.5 rounded-xl hover:border-blue-200 transition-all uppercase tracking-wider">${c}</button>`).join('')}
+                </div>
+            `;
         }
 
         function openEvent(id) {
@@ -260,7 +253,8 @@
         function addToGoogleCalendar() {
             if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
-            const end = currentEvent.date.replace(/-/g, '') + 'T170000Z';
+            // Google日曆匯出也支援結束日
+            const end = (currentEvent.end_date || currentEvent.date).replace(/-/g, '') + 'T170000Z';
             const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentEvent.title)}&dates=${start}/${end}&details=主辦單位:${encodeURIComponent(currentEvent.org)}&location=${encodeURIComponent(currentEvent.loc)}`;
             window.open(url, '_blank');
         }
@@ -285,7 +279,15 @@
                 initialView: 'dayGridMonth',
                 locale: 'zh-tw',
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
-                events: allEvents.map(e => ({ title: e.title, start: e.date, id: e.id, backgroundColor: '#1d4ed8', borderColor: '#1d4ed8' })),
+                // 方法二核心：地圖 e.end_date 到 FullCalendar
+                events: allEvents.map(e => ({ 
+                    title: e.title, 
+                    start: e.date, 
+                    end: e.end_date || e.date, // 支援跨日
+                    id: e.id, 
+                    backgroundColor: '#1d4ed8', 
+                    borderColor: '#1d4ed8' 
+                })),
                 eventClick: function(info) { openEvent(info.event.id); }
             });
             setTimeout(() => calendar.render(), 10);
