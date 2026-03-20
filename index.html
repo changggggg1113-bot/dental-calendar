@@ -136,11 +136,74 @@
             });
         }
 
-        function renderAll() {
+function renderAll() {
             renderHome();
             renderList();
             renderSocieties();
             renderFilters();
+        }
+
+        // --- 以下是修改後的醫學會渲染與篩選邏輯 ---
+
+        function renderSocieties() {
+            // 取得所有不重複的主辦單位
+            const orgs = [...new Set(allEvents.map(e => e.org))];
+            
+            document.getElementById('society-grid').innerHTML = orgs.map(org => {
+                const count = allEvents.filter(e => e.org === org).length;
+                return `
+                    <div class="bg-white p-8 rounded-3xl border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer text-center group" 
+                         onclick="filterByOrg('${org}')">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl group-hover:scale-110 transition-transform">${count}</div>
+                        <h4 class="font-black text-slate-800">${org}</h4>
+                        <p class="text-xs text-slate-400 mt-2 font-bold">共有 ${count} 個活動</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 點擊卡片後執行的跳轉與過濾函式
+        function filterByOrg(orgName) {
+            // 1. 切換分頁到 'list'
+            showPage('list');
+            
+            // 2. 篩選出該學會的活動
+            const filteredEvents = allEvents.filter(ev => ev.org === orgName);
+            
+            // 3. 重新按日期分組資料
+            const groups = filteredEvents.reduce((acc, ev) => {
+                const d = ev.date;
+                if (!acc[d]) acc[d] = [];
+                acc[d].push(ev);
+                return acc;
+            }, {});
+
+            const container = document.getElementById('agenda-container');
+            
+            // 4. 在列表上方加入一個深藍色的篩選提示框
+            const filterHeader = `
+                <div class="bg-blue-600 text-white p-6 rounded-3xl mb-8 flex justify-between items-center shadow-lg shadow-blue-100 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div>
+                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-1">正在顯示</p>
+                        <h2 class="text-xl font-black">${orgName} 的所有活動</h2>
+                    </div>
+                    <button onclick="renderList()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-bold transition-all">清除篩選</button>
+                </div>
+            `;
+
+            // 5. 渲染過濾後的內容
+            container.innerHTML = filterHeader + Object.keys(groups).map(date => `
+                <div class="space-y-4">
+                    <h3 class="sticky top-24 bg-[#F1F5F9]/80 backdrop-blur-sm py-2 text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-3">
+                        ${date} <span class="h-[1px] flex-1 bg-slate-200"></span>
+                    </h3>
+                    <div class="space-y-3">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
+                </div>
+            `).join('');
+
+            // 6. 滑動到頂部讓醫師看到結果
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         }
 
         function renderHome() {
