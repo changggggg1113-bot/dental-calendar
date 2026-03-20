@@ -17,6 +17,12 @@
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); }
         .modal-content { background: white; margin: 5vh auto; padding: 0; border-radius: 24px; width: 95%; max-width: 550px; position: relative; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); }
         .fc-event { cursor: pointer; border-radius: 4px !important; padding: 2px 4px !important; }
+        /* 增加一個簡單的動畫效果 */
+        .filter-header-anim { animation: slideDown 0.4s ease-out; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="bg-[#F1F5F9] text-slate-800">
@@ -123,6 +129,7 @@
         let allEvents = [];
         let currentEvent = null;
 
+        // 初始化資料載入
         async function init() {
             Papa.parse(sheetUrl, {
                 download: true,
@@ -136,82 +143,19 @@
             });
         }
 
-function renderAll() {
+        function renderAll() {
             renderHome();
             renderList();
             renderSocieties();
             renderFilters();
         }
 
-        // --- 以下是修改後的醫學會渲染與篩選邏輯 ---
-
-        function renderSocieties() {
-            // 取得所有不重複的主辦單位
-            const orgs = [...new Set(allEvents.map(e => e.org))];
-            
-            document.getElementById('society-grid').innerHTML = orgs.map(org => {
-                const count = allEvents.filter(e => e.org === org).length;
-                return `
-                    <div class="bg-white p-8 rounded-3xl border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer text-center group" 
-                         onclick="filterByOrg('${org}')">
-                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl group-hover:scale-110 transition-transform">${count}</div>
-                        <h4 class="font-black text-slate-800">${org}</h4>
-                        <p class="text-xs text-slate-400 mt-2 font-bold">共有 ${count} 個活動</p>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // 點擊卡片後執行的跳轉與過濾函式
-        function filterByOrg(orgName) {
-            // 1. 切換分頁到 'list'
-            showPage('list');
-            
-            // 2. 篩選出該學會的活動
-            const filteredEvents = allEvents.filter(ev => ev.org === orgName);
-            
-            // 3. 重新按日期分組資料
-            const groups = filteredEvents.reduce((acc, ev) => {
-                const d = ev.date;
-                if (!acc[d]) acc[d] = [];
-                acc[d].push(ev);
-                return acc;
-            }, {});
-
-            const container = document.getElementById('agenda-container');
-            
-            // 4. 在列表上方加入一個深藍色的篩選提示框
-            const filterHeader = `
-                <div class="bg-blue-600 text-white p-6 rounded-3xl mb-8 flex justify-between items-center shadow-lg shadow-blue-100 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div>
-                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-1">正在顯示</p>
-                        <h2 class="text-xl font-black">${orgName} 的所有活動</h2>
-                    </div>
-                    <button onclick="renderList()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-bold transition-all">清除篩選</button>
-                </div>
-            `;
-
-            // 5. 渲染過濾後的內容
-            container.innerHTML = filterHeader + Object.keys(groups).map(date => `
-                <div class="space-y-4">
-                    <h3 class="sticky top-24 bg-[#F1F5F9]/80 backdrop-blur-sm py-2 text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-3">
-                        ${date} <span class="h-[1px] flex-1 bg-slate-200"></span>
-                    </h3>
-                    <div class="space-y-3">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
-                </div>
-            `).join('');
-
-            // 6. 滑動到頂部讓醫師看到結果
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        }
-
+        // 首頁渲染：僅顯示本月精選
         function renderHome() {
             const now = new Date();
             const currentMonth = now.getMonth() + 1;
             const currentYear = now.getFullYear();
 
-            // 精確過濾：本月精選活動
             const thisMonthEvents = allEvents.filter(ev => {
                 const evDate = new Date(ev.date);
                 return (evDate.getMonth() + 1) === currentMonth && evDate.getFullYear() === currentYear;
@@ -229,11 +173,8 @@ function renderAll() {
                 `;
             }
 
-            // 有積分
             document.getElementById('credit-list').innerHTML = allEvents.filter(e => parseFloat(e.credit) > 0).slice(0, 4).map(ev => createCard(ev, 'row')).join('');
-            // 線上
             document.getElementById('online-list').innerHTML = allEvents.filter(e => e.type.includes('線上')).slice(0, 4).map(ev => createCard(ev, 'row')).join('');
-            // 最新更新
             document.getElementById('recent-updates').innerHTML = [...allEvents].reverse().slice(0, 3).map(ev => `
                 <div class="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer group" onclick="openEvent('${ev.id}')">
                     <span class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">${ev.title}</span>
@@ -242,6 +183,7 @@ function renderAll() {
             `).join('');
         }
 
+        // 建立活動卡片
         function createCard(ev, style) {
             const dateObj = new Date(ev.date);
             const day = dateObj.getDate();
@@ -281,6 +223,7 @@ function renderAll() {
             `;
         }
 
+        // 列表頁渲染
         function renderList() {
             const groups = allEvents.reduce((acc, ev) => {
                 const d = ev.date;
@@ -299,12 +242,19 @@ function renderAll() {
             `).join('');
         }
 
+        // 醫學會頁渲染
         function renderSocieties() {
             const orgs = [...new Set(allEvents.map(e => e.org))];
-            document.getElementById('society-grid').innerHTML = orgs.map(org => {
+            const grid = document.getElementById('society-grid');
+            if (!grid) return;
+
+            grid.innerHTML = orgs.map(org => {
                 const count = allEvents.filter(e => e.org === org).length;
+                // 使用 JSON.stringify 以處理名稱中可能存在的引號或空格
+                const orgJson = JSON.stringify(org);
                 return `
-                    <div class="bg-white p-8 rounded-3xl border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer text-center group">
+                    <div class="bg-white p-8 rounded-3xl border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer text-center group" 
+                         onclick='filterByOrg(${orgJson})'>
                         <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl group-hover:scale-110 transition-transform">${count}</div>
                         <h4 class="font-black text-slate-800">${org}</h4>
                         <p class="text-xs text-slate-400 mt-2 font-bold">共有 ${count} 個活動</p>
@@ -313,6 +263,40 @@ function renderAll() {
             }).join('');
         }
 
+        // 點擊學會卡片後的過濾邏輯
+        function filterByOrg(orgName) {
+            showPage('list');
+            const filteredEvents = allEvents.filter(ev => ev.org === orgName);
+            const groups = filteredEvents.reduce((acc, ev) => {
+                const d = ev.date;
+                if (!acc[d]) acc[d] = [];
+                acc[d].push(ev);
+                return acc;
+            }, {});
+
+            const container = document.getElementById('agenda-container');
+            const filterHeader = `
+                <div class="bg-blue-600 text-white p-6 rounded-3xl mb-8 flex justify-between items-center shadow-lg shadow-blue-100 filter-header-anim">
+                    <div>
+                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest mb-1">正在顯示</p>
+                        <h2 class="text-xl font-black">${orgName}</h2>
+                    </div>
+                    <button onclick="renderList()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-bold transition-all">顯示全部</button>
+                </div>
+            `;
+
+            container.innerHTML = filterHeader + Object.keys(groups).map(date => `
+                <div class="space-y-4">
+                    <h3 class="sticky top-24 bg-[#F1F5F9]/80 backdrop-blur-sm py-2 text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-3">
+                        ${date} <span class="h-[1px] flex-1 bg-slate-200"></span>
+                    </h3>
+                    <div class="space-y-3">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
+                </div>
+            `).join('');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 篩選按鈕渲染
         function renderFilters() {
             const cates = [...new Set(allEvents.map(e => e.cate))];
             document.getElementById('filter-cate').innerHTML = `
@@ -323,6 +307,7 @@ function renderAll() {
             `;
         }
 
+        // 開啟 Modal
         function openEvent(id) {
             currentEvent = allEvents.find(e => e.id == id);
             if(!currentEvent) return;
@@ -336,6 +321,7 @@ function renderAll() {
 
         function closeModal() { document.getElementById('eventModal').style.display = 'none'; }
 
+        // 加入 Google 日曆
         function addToGoogleCalendar() {
             if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
@@ -344,6 +330,7 @@ function renderAll() {
             window.open(url, '_blank');
         }
 
+        // 分頁切換
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
@@ -351,13 +338,16 @@ function renderAll() {
 
             document.getElementById('page-' + pageId).classList.add('active');
             const btn = document.getElementById('nav-' + pageId);
-            btn.classList.add('active-nav');
-            btn.classList.remove('text-slate-500');
+            if (btn) {
+                btn.classList.add('active-nav');
+                btn.classList.remove('text-slate-500');
+            }
 
             if(pageId === 'calendar') renderCalendar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // 日曆渲染
         function renderCalendar() {
             var calendarEl = document.getElementById('full-calendar');
             var calendar = new FullCalendar.Calendar(calendarEl, {
