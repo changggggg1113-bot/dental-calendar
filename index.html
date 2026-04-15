@@ -27,80 +27,75 @@
             <div class="text-2xl md:text-3xl font-black text-blue-700 tracking-tighter cursor-pointer" onclick="showPage('home')">
                 Dental<span class="text-slate-400 font-medium tracking-normal">MEDcal</span>
             </div>
-
             <div class="hidden lg:flex gap-8 h-full items-center text-sm font-bold text-slate-500">
                 <button onclick="showPage('home')" id="nav-home" class="h-full px-2 active-nav">首頁</button>
                 <button onclick="showPage('calendar')" id="nav-calendar" class="h-full px-2">日曆</button>
-                <button onclick="showPage('list')" id="nav-list" class="h-full px-2">列表</button>
+                <button onclick="showPage('list')" id="nav-list" class="h-full px-2">列表搜尋</button>
                 <button onclick="showPage('societies')" id="nav-societies" class="h-full px-2">醫學會</button>
-                <button onclick="showPage('search')" id="nav-search" class="h-full px-2">搜尋</button>
-                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2">收藏</button>
             </div>
-
             <button class="lg:hidden p-2 text-slate-600" onclick="toggleMobileMenu()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
             </button>
         </nav>
     </header>
 
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden" onclick="toggleMobileMenu()"></div>
     <div id="mobile-menu" class="fixed top-0 right-0 w-64 h-full bg-white z-[70] shadow-2xl p-6 flex flex-col">
-        <div class="flex justify-end mb-4">
-            <button onclick="toggleMobileMenu()" class="text-slate-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+        <div class="flex justify-end mb-4"><button onclick="toggleMobileMenu()" class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
         <button onclick="showPage('home')" class="py-4 text-left font-black text-lg border-b">首頁</button>
         <button onclick="showPage('calendar')" class="py-4 text-left font-black text-lg border-b">日曆</button>
-        <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表</button>
+        <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表搜尋</button>
         <button onclick="showPage('societies')" class="py-4 text-left font-black text-lg border-b">醫學會</button>
     </div>
 
     <main class="max-w-7xl mx-auto p-4 md:p-6 min-h-screen">
         <div id="loading" class="text-center py-40">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-            <p class="mt-4 text-slate-400 font-medium">資料載入中...</p>
+            <p class="mt-4 text-slate-400 font-medium">Dental MEDcal 同步中...</p>
         </div>
         
         <div id="page-home" class="page-content active space-y-12">
             <section>
                 <div class="flex justify-between items-end mb-6">
                     <h2 class="text-2xl font-black text-slate-900">本月精選活動</h2>
-                    <span class="text-sm font-bold text-blue-600 cursor-pointer" onclick="showPage('list')">查看全部 →</span>
+                    <span class="text-sm font-bold text-blue-600 cursor-pointer" onclick="showPage('list')">進階搜尋 →</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-grid"></div>
             </section>
         </div>
 
-        <div id="page-calendar" class="page-content">
-            <div id="full-calendar" class="bg-white p-4 md:p-6 rounded-3xl shadow-xl"></div>
+        <div id="page-list" class="page-content space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm space-y-4">
+                <div class="flex gap-2">
+                    <input type="text" id="searchInput" placeholder="搜尋活動名稱、主辦單位..." class="flex-1 bg-slate-100 border-none rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-blue-600 outline-none">
+                    <button onclick="applyFilters()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-sm">搜尋</button>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <select id="filterOrg" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">所有學會</option></select>
+                    <select id="filterLoc" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">所有地區</option></select>
+                    <button id="btnCredit" onclick="toggleCreditFilter()" class="bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2 border border-transparent">🎓 有積分</button>
+                    <button onclick="resetFilters()" class="text-xs text-slate-400 font-bold px-2">清除重設</button>
+                </div>
+            </div>
+
+            <div class="text-sm font-bold text-slate-400 px-2" id="resultCount">共 -- 個活動</div>
+            <div class="max-w-4xl mx-auto space-y-8" id="agenda-container"></div>
         </div>
 
-        <div id="page-list" class="page-content">
-            <div class="max-w-3xl mx-auto space-y-8" id="agenda-container"></div>
-        </div>
-
-        <div id="page-societies" class="page-content">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="society-grid"></div>
-        </div>
+        <div id="page-calendar" class="page-content"><div id="full-calendar" class="bg-white p-4 rounded-3xl shadow-xl"></div></div>
+        <div id="page-societies" class="page-content"><div class="grid grid-cols-1 sm:grid-cols-3 gap-6" id="society-grid"></div></div>
     </main>
 
     <div id="eventModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="h-24 bg-gradient-to-r from-blue-600 to-indigo-700 p-6 flex items-end">
-                <h2 id="modal-title" class="text-xl font-black text-white leading-tight"></h2>
-            </div>
+            <div id="modal-header-color" class="h-24 bg-blue-600 p-6 flex items-end"><h2 id="modal-title" class="text-xl font-black text-white leading-tight line-clamp-2"></h2></div>
             <div class="p-6 space-y-6">
-                <div class="bg-slate-50 p-4 rounded-xl space-y-2">
-                    <p class="text-sm"><strong>時間：</strong><span id="modal-datetime"></span></p>
-                    <p class="text-sm"><strong>地點：</strong><span id="modal-loc"></span></p>
-                    <p class="text-sm"><strong>單位：</strong><span id="modal-org"></span></p>
+                <div class="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
+                    <p><strong>時間：</strong><span id="modal-datetime"></span></p>
+                    <p><strong>地點：</strong><span id="modal-loc"></span></p>
+                    <p><strong>主辦：</strong><span id="modal-org"></span></p>
                 </div>
-                <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往官方連結</a>
+                <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往官方網址</a>
             </div>
         </div>
     </div>
@@ -108,6 +103,7 @@
     <script>
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpJUZHak3Qd_ya8qFtCHShlQ8NsqeLmE4PqhTS4HAGVaVVwFELaaXcqP-GkQWDh6_v5raIM22SBhP8/pub?output=csv';
         let allEvents = [];
+        let isCreditOnly = false;
 
         async function init() {
             Papa.parse(sheetUrl, {
@@ -115,94 +111,85 @@
                 header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
-                    
-                    // 【關鍵修改】排序邏輯：b - a 代表「從新到舊」
                     allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    
                     document.getElementById('loading').style.display = 'none';
+                    fillFilterOptions();
                     renderAll();
                 }
             });
         }
 
-        function toggleMobileMenu() {
-            document.getElementById('mobile-menu').classList.toggle('open');
-            document.getElementById('mobile-menu-overlay').classList.toggle('hidden');
+        // 填充下拉選單選項
+        function fillFilterOptions() {
+            const orgs = [...new Set(allEvents.map(e => e.org))].sort();
+            const locs = [...new Set(allEvents.map(e => e.loc.substring(0, 3)))].sort(); // 抓前三個字當地區
+            
+            const orgSelect = document.getElementById('filterOrg');
+            orgs.forEach(o => orgSelect.innerHTML += `<option value="${o}">${o}</option>`);
+            
+            const locSelect = document.getElementById('filterLoc');
+            locs.forEach(l => locSelect.innerHTML += `<option value="${l}">${l}</option>`);
         }
 
-        function showPage(pageId) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
-            
-            document.getElementById('page-' + pageId).classList.add('active');
-            const btn = document.getElementById('nav-' + pageId);
-            if(btn) btn.classList.add('active-nav');
+        function toggleCreditFilter() {
+            isCreditOnly = !isCreditOnly;
+            const btn = document.getElementById('btnCredit');
+            btn.classList.toggle('bg-blue-100', isCreditOnly);
+            btn.classList.toggle('text-blue-600', isCreditOnly);
+            btn.classList.toggle('border-blue-200', isCreditOnly);
+            applyFilters();
+        }
 
-            if(window.innerWidth < 1024) toggleMobileMenu();
-            if(pageId === 'calendar') renderCalendar();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function applyFilters() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const selectedOrg = document.getElementById('filterOrg').value;
+            const selectedLoc = document.getElementById('filterLoc').value;
+
+            const filtered = allEvents.filter(ev => {
+                const matchSearch = ev.title.toLowerCase().includes(searchText) || ev.org.toLowerCase().includes(searchText);
+                const matchOrg = selectedOrg === "" || ev.org === selectedOrg;
+                const matchLoc = selectedLoc === "" || ev.loc.includes(selectedLoc);
+                const matchCredit = !isCreditOnly || parseFloat(ev.credit) > 0;
+                return matchSearch && matchOrg && matchLoc && matchCredit;
+            });
+
+            document.getElementById('resultCount').innerText = `共 ${filtered.length} 個活動`;
+            renderList(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = "";
+            document.getElementById('filterOrg').value = "";
+            document.getElementById('filterLoc').value = "";
+            isCreditOnly = false;
+            document.getElementById('btnCredit').className = "bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2 border border-transparent";
+            applyFilters();
         }
 
         function renderAll() {
             renderHome();
-            renderList();
+            renderList(allEvents);
             renderSocieties();
         }
 
         function renderHome() {
             const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
-
-            const thisMonthEvents = allEvents.filter(ev => {
+            const m = now.getMonth() + 1;
+            const y = now.getFullYear();
+            const thisMonth = allEvents.filter(ev => {
                 const d = new Date(ev.date);
-                return (d.getMonth() + 1) === currentMonth && d.getFullYear() === currentYear;
+                return (d.getMonth()+1) === m && d.getFullYear() === y;
             });
-
             const grid = document.getElementById('featured-grid');
-            if(thisMonthEvents.length > 0) {
-                grid.innerHTML = thisMonthEvents.slice(0, 6).map(ev => createCard(ev, 'grid')).join('');
+            if(thisMonth.length > 0) {
+                grid.innerHTML = thisMonth.slice(0, 6).map(ev => createCard(ev, 'grid')).join('');
             } else {
-                grid.innerHTML = `<div class="col-span-full py-10 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">本月暫無精選活動</div>`;
+                grid.innerHTML = `<p class="col-span-full text-center text-slate-400 py-10">本月無精選活動</p>`;
             }
         }
 
-        function createCard(ev, style) {
-            const dateObj = new Date(ev.date);
-            const d = dateObj.getDate();
-            const m = dateObj.getMonth() + 1;
-            
-            if (style === 'grid') {
-                return `
-                    <div class="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer" onclick="openEvent('${ev.id}')">
-                        <div class="flex gap-4">
-                            <div class="text-center shrink-0">
-                                <span class="block text-3xl font-black text-blue-600">${d}</span>
-                                <span class="block text-xs font-bold text-slate-300">${m}月</span>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-800 leading-tight mb-2 line-clamp-2">${ev.title}</h3>
-                                <p class="text-xs text-slate-400">📍 ${ev.loc}</p>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-            return `
-                <div class="bg-white p-4 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="openEvent('${ev.id}')">
-                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex flex-col items-center justify-center shrink-0 text-blue-600 font-bold">
-                        <span class="text-sm">${d}</span>
-                        <span class="text-[8px] uppercase">${m}月</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-sm text-slate-800 truncate">${ev.title}</h4>
-                        <p class="text-[10px] text-slate-400">${ev.org}</p>
-                    </div>
-                </div>`;
-        }
-
-        function renderList() {
-            // 因為 allEvents 已經排好序，這裡分組後也會維持最新的在上面
-            const groups = allEvents.reduce((acc, ev) => {
+        function renderList(eventsData) {
+            const groups = eventsData.reduce((acc, ev) => {
                 const d = ev.date;
                 if (!acc[d]) acc[d] = [];
                 acc[d].push(ev);
@@ -211,35 +198,52 @@
 
             document.getElementById('agenda-container').innerHTML = Object.keys(groups).map(date => `
                 <div class="space-y-4">
-                    <h3 class="text-sm font-black text-slate-400 border-b pb-2 tracking-widest uppercase">${date}</h3>
-                    <div class="space-y-2">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
+                    <h3 class="text-sm font-black text-slate-400 border-b pb-2 tracking-widest">${date}</h3>
+                    <div class="space-y-3">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
                 </div>`).join('');
+        }
+
+        function createCard(ev, style) {
+            const dateObj = new Date(ev.date);
+            const d = dateObj.getDate();
+            const m = dateObj.getMonth() + 1;
+            if (style === 'grid') {
+                return `<div class="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer" onclick="openEvent('${ev.id}')">
+                    <div class="flex gap-4">
+                        <div class="text-center shrink-0"><span class="block text-3xl font-black text-blue-600">${d}</span><span class="block text-xs font-bold text-slate-300">${m}月</span></div>
+                        <div><h3 class="font-bold text-slate-800 line-clamp-2">${ev.title}</h3><p class="text-xs text-slate-400 mt-2">📍 ${ev.loc}</p></div>
+                    </div>
+                </div>`;
+            }
+            return `<div class="bg-white p-5 rounded-3xl flex items-center gap-6 cursor-pointer border border-transparent hover:border-blue-100 transition-all shadow-sm" onclick="openEvent('${ev.id}')">
+                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex flex-col items-center justify-center shrink-0">
+                    <span class="text-xl font-black text-blue-600">${d}</span>
+                    <span class="text-[10px] font-bold text-blue-300 uppercase">${m}月</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex gap-2 mb-1">
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">${ev.type}</span>
+                        ${parseFloat(ev.credit) > 0 ? `<span class="text-[10px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-md">🎓 ${ev.credit} 學分</span>` : ''}
+                    </div>
+                    <h4 class="font-bold text-slate-800 truncate text-base">${ev.title}</h4>
+                    <p class="text-xs text-slate-400 mt-1">${ev.org} · ${ev.time}</p>
+                </div>
+            </div>`;
         }
 
         function renderSocieties() {
             const orgs = [...new Set(allEvents.map(e => e.org))];
-            document.getElementById('society-grid').innerHTML = orgs.map(org => {
-                const count = allEvents.filter(e => e.org === org).length;
-                return `
-                    <div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')">
-                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${count}</div>
-                        <h4 class="font-black text-slate-800 text-sm">${org}</h4>
-                    </div>`;
-            }).join('');
+            document.getElementById('society-grid').innerHTML = orgs.map(org => `
+                <div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div>
+                    <h4 class="font-black text-slate-800 text-sm">${org}</h4>
+                </div>`).join('');
         }
 
         function filterByOrg(orgName) {
             showPage('list');
-            const filtered = allEvents.filter(ev => ev.org === orgName);
-            const groups = filtered.reduce((acc, ev) => {
-                const d = ev.date;
-                if (!acc[d]) acc[d] = [];
-                acc[d].push(ev);
-                return acc;
-            }, {});
-            const container = document.getElementById('agenda-container');
-            container.innerHTML = `<div class="bg-blue-600 text-white p-6 rounded-3xl mb-6 flex justify-between items-center"><h2 class="font-black">${orgName}</h2><button onclick="renderList()" class="bg-white/20 px-3 py-1 rounded-lg text-xs">清除</button></div>` + 
-                Object.keys(groups).map(date => `<div class="space-y-4"><h3 class="text-sm font-black text-slate-400 border-b pb-2">${date}</h3><div class="space-y-2">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div></div>`).join('');
+            document.getElementById('filterOrg').value = orgName;
+            applyFilters();
         }
 
         function openEvent(id) {
@@ -247,13 +251,32 @@
             if(!ev) return;
             document.getElementById('modal-title').innerText = ev.title;
             document.getElementById('modal-datetime').innerText = `${ev.date} ${ev.time}`;
-            document.getElementById('modal-org').innerText = ev.org;
             document.getElementById('modal-loc').innerText = ev.loc;
+            document.getElementById('modal-org').innerText = ev.org;
             document.getElementById('modal-link').href = ev.url;
             document.getElementById('eventModal').style.display = 'block';
         }
 
         function closeModal() { document.getElementById('eventModal').style.display = 'none'; }
+        
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('open');
+            document.getElementById('mobile-menu-overlay').classList.toggle('hidden');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            const btn = document.getElementById('nav-' + pageId);
+            if(btn) btn.classList.add('active-nav');
+            if(window.innerWidth < 1024) {
+                document.getElementById('mobile-menu').classList.remove('open');
+                document.getElementById('mobile-menu-overlay').classList.add('hidden');
+            }
+            if(pageId === 'calendar') renderCalendar();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         function renderCalendar() {
             var calendarEl = document.getElementById('full-calendar');
