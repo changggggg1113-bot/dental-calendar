@@ -18,6 +18,9 @@
         .modal-content { background: white; margin: 5vh auto; padding: 0; border-radius: 24px; width: 95%; max-width: 550px; position: relative; overflow: hidden; }
         #mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
         #mobile-menu.open { transform: translateX(0); }
+        /* 隱藏捲軸但保持滾動 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-[#F1F5F9] text-slate-800">
@@ -60,7 +63,6 @@
             <section id="recommendation-section" style="display: none;">
                 <div class="flex justify-between items-end mb-6">
                     <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">✨ 為你推薦</h2>
-                    <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">基於您的收藏</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recommendation-grid"></div>
             </section>
@@ -75,12 +77,26 @@
         </div>
 
         <div id="page-list" class="page-content space-y-6">
-            <div class="bg-white p-6 rounded-3xl shadow-sm space-y-4">
+            <div class="bg-white p-6 rounded-3xl shadow-sm space-y-6">
                 <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋關鍵字..." class="w-full bg-slate-100 border-none rounded-2xl px-6 py-4 text-sm outline-none">
-                <div class="flex flex-wrap gap-2">
+                
+                <div class="space-y-3">
+                    <div class="flex overflow-x-auto no-scrollbar gap-2 pb-1">
+                        <button onclick="setQuickSearch('植牙')" class="shrink-0 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all"># 植牙</button>
+                        <button onclick="setQuickSearch('矯正')" class="shrink-0 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all"># 矯正</button>
+                        <button onclick="setQuickSearch('數位')" class="shrink-0 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all"># 數位牙科</button>
+                        <button onclick="setQuickSearch('GP')" class="shrink-0 px-4 py-2 bg-slate-100 text-slate-600 rounded-full text-xs font-bold border border-slate-200 hover:bg-slate-600 hover:text-white transition-all"># GP</button>
+                        <button onclick="setQuickSearch('GBR')" class="shrink-0 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all"># GBR手術</button>
+                        <button onclick="setQuickSearch('數位取模')" class="shrink-0 px-4 py-2 bg-cyan-50 text-cyan-600 rounded-full text-xs font-bold border border-cyan-100 hover:bg-cyan-600 hover:text-white transition-all"># 數位取模</button>
+                        <button onclick="setQuickSearch('再生')" class="shrink-0 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"># 再生醫學</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-50">
                     <select id="filterOrg" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">所有學會</option></select>
                     <select id="filterLoc" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">地區</option></select>
                     <button id="btnCredit" onclick="toggleCreditFilter()" class="bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2">🎓 有積分</button>
+                    <button onclick="resetFilters()" class="text-xs text-slate-300 font-bold px-2 ml-auto">清除全部</button>
                 </div>
             </div>
             <div id="agenda-container" class="space-y-8"></div>
@@ -111,8 +127,8 @@
                     <p><strong>主辦：</strong><span id="modal-org"></span></p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="addToGoogleCalendar()" class="flex items-center justify-center gap-2 bg-[#4285F4] text-white py-3 rounded-xl text-[11px] font-bold hover:bg-blue-700 transition-all">Google 日曆</button>
-                    <button onclick="downloadICS()" class="flex items-center justify-center gap-2 bg-slate-800 text-white py-3 rounded-xl text-[11px] font-bold hover:bg-black transition-all">加入 iPhone 日曆</button>
+                    <button onclick="addToGoogleCalendar()" class="bg-[#4285F4] text-white py-3 rounded-xl text-xs font-bold">Google 日曆</button>
+                    <button onclick="downloadICS()" class="bg-slate-800 text-white py-3 rounded-xl text-xs font-bold">加入 iPhone 日曆</button>
                 </div>
                 <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往官方網址</a>
             </div>
@@ -131,13 +147,31 @@
                 download: true, header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
-                    allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
                     document.getElementById('loading').style.display = 'none';
                     fillFilterOptions();
                     updateFavNavIcon();
                     renderAll();
+                    checkUpcomingReminders();
                 }
             });
+        }
+
+        // 快捷標籤搜尋
+        function setQuickSearch(tag) {
+            document.getElementById('searchInput').value = tag;
+            applyFilters();
+            // 自動滾動到結果
+            document.getElementById('agenda-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = "";
+            document.getElementById('filterOrg').value = "";
+            document.getElementById('filterLoc').value = "";
+            isCreditOnly = false;
+            document.getElementById('btnCredit').className = "bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2";
+            applyFilters();
         }
 
         function updateFavNavIcon() {
@@ -150,12 +184,22 @@
 
         function toggleFav(id, event) {
             if(event) event.stopPropagation();
+            if (Notification.permission === "default") Notification.requestPermission();
             const index = favorites.indexOf(id);
             if(index > -1) favorites.splice(index, 1);
             else favorites.push(id);
             localStorage.setItem('medcal_favs', JSON.stringify(favorites));
             updateFavNavIcon();
             renderAll();
+        }
+
+        function checkUpcomingReminders() {
+            if (Notification.permission !== "granted") return;
+            const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            const tomorrowEvents = allEvents.filter(ev => favorites.includes(ev.id) && ev.date === tomorrowStr);
+            tomorrowEvents.forEach(ev => {
+                new Notification("Dental MEDcal 提醒", { body: `明天活動：${ev.title}`, icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" });
+            });
         }
 
         function fillFilterOptions() {
@@ -177,7 +221,7 @@
             const org = document.getElementById('filterOrg').value;
             const loc = document.getElementById('filterLoc').value;
             const filtered = allEvents.filter(ev => {
-                return (ev.title.toLowerCase().includes(q) || ev.org.toLowerCase().includes(q)) &&
+                return (ev.title.toLowerCase().includes(q) || ev.org.toLowerCase().includes(q) || ev.type.toLowerCase().includes(q)) &&
                        (org === "" || ev.org === org) &&
                        (loc === "" || ev.loc.includes(loc)) &&
                        (!isCreditOnly || parseFloat(ev.credit) > 0);
@@ -190,57 +234,25 @@
             applyFilters();
             renderFavs();
             renderSocieties();
-            renderRecommendations(); // 執行推薦邏輯
+            renderRecommendations();
         }
 
-        // --- 核心：個人化推薦邏輯 ---
         function renderRecommendations() {
             const recSection = document.getElementById('recommendation-section');
             const recGrid = document.getElementById('recommendation-grid');
-            
-            // 如果醫師還沒收藏任何東西，不顯示推薦區
-            if (favorites.length === 0) {
-                recSection.style.display = 'none';
-                return;
-            }
-
-            // 1. 分析收藏清單中的偏好
+            if (favorites.length === 0) { recSection.style.display = 'none'; return; }
             const favEvents = allEvents.filter(ev => favorites.includes(ev.id));
             const prefOrgs = getMostFrequent(favEvents.map(e => e.org));
-            const prefTypes = getMostFrequent(favEvents.map(e => e.type));
-            const prefLocs = getMostFrequent(favEvents.map(e => e.loc.substring(0, 3)));
-
-            // 2. 篩選推薦活動 (排除已收藏的)
-            const recommendations = allEvents.filter(ev => {
-                const isAlreadyFav = favorites.includes(ev.id);
-                if (isAlreadyFav) return false;
-
-                // 評分機制：主辦單位、類型或地區符合，就加分
-                let score = 0;
-                if (prefOrgs.includes(ev.org)) score += 3;
-                if (prefTypes.includes(ev.type)) score += 2;
-                if (prefLocs.includes(ev.loc.substring(0, 3))) score += 1;
-
-                return score >= 2; // 門檻分數
-            });
-
-            // 3. 渲染
+            const recommendations = allEvents.filter(ev => !favorites.includes(ev.id) && prefOrgs.includes(ev.org));
             if (recommendations.length > 0) {
                 recSection.style.display = 'block';
                 recGrid.innerHTML = recommendations.slice(0, 3).map(ev => createCard(ev, 'grid')).join('');
-            } else {
-                recSection.style.display = 'none';
-            }
+            } else { recSection.style.display = 'none'; }
         }
 
-        // 輔助函式：找出陣列中出現頻率最高的元素
         function getMostFrequent(arr) {
-            const counts = arr.reduce((acc, val) => {
-                acc[val] = (acc[val] || 0) + 1;
-                return acc;
-            }, {});
-            const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-            return sorted.slice(0, 2); // 回傳前兩名
+            const counts = arr.reduce((acc, val) => { acc[val] = (acc[val] || 0) + 1; return acc; }, {});
+            return Object.keys(counts).sort((a, b) => counts[b] - counts[a]).slice(0, 2);
         }
 
         function renderHome() {
@@ -282,7 +294,6 @@
             const dateObj = new Date(ev.date);
             const isFav = favorites.includes(ev.id);
             const heartIcon = isFav ? '♥' : '♡';
-            
             if (style === 'grid') {
                 return `<div class="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer" onclick="openEvent('${ev.id}')">
                     <div class="flex justify-between items-start mb-4">
@@ -323,60 +334,40 @@
         }
 
         function addToGoogleCalendar() {
-            if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
-            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentEvent.title)}&dates=${start}/${start}&location=${encodeURIComponent(currentEvent.loc)}&sf=true&output=xml`;
-            window.open(url, '_blank');
+            window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentEvent.title)}&dates=${start}/${start}&location=${encodeURIComponent(currentEvent.loc)}`, '_blank');
         }
 
         function downloadICS() {
-            if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
             const icsData = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${currentEvent.title}`,`LOCATION:${currentEvent.loc}`,'END:VEVENT','END:VCALENDAR'].join('\n');
-            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
+            link.href = window.URL.createObjectURL(new Blob([icsData], { type: 'text/calendar;charset=utf-8' }));
             link.setAttribute('download', `${currentEvent.title}.ics`);
-            document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
         }
 
         function closeModal() { document.getElementById('eventModal').style.display = 'none'; }
         function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('open'); document.getElementById('mobile-menu-overlay').classList.toggle('hidden'); }
-
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
-            const targetPage = document.getElementById('page-' + pageId);
-            if (targetPage) targetPage.classList.add('active');
+            document.getElementById('page-' + pageId).classList.add('active');
             const btn = document.getElementById('nav-' + pageId);
             if(btn) btn.classList.add('active-nav');
-            updateFavNavIcon();
-            if(window.innerWidth < 1024 && document.getElementById('mobile-menu').classList.contains('open')) toggleMobileMenu();
             if(pageId === 'calendar') renderCalendar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function renderSocieties() {
             const orgs = [...new Set(allEvents.map(e => e.org))];
-            const grid = document.getElementById('society-grid');
-            if(!grid) return;
-            grid.innerHTML = orgs.map(org => `<div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')"><div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div><h4 class="font-black text-slate-800 text-sm">${org}</h4></div>`).join('');
+            document.getElementById('society-grid').innerHTML = orgs.map(org => `<div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')"><div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div><h4 class="font-black text-slate-800 text-sm">${org}</h4></div>`).join('');
         }
 
-        function filterByOrg(orgName) {
-            showPage('list');
-            document.getElementById('filterOrg').value = orgName;
-            applyFilters();
-        }
-
+        function filterByOrg(orgName) { showPage('list'); document.getElementById('filterOrg').value = orgName; applyFilters(); }
         function renderCalendar() {
-            var calendarEl = document.getElementById('full-calendar');
-            if(!calendarEl) return;
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
-                locale: 'zh-tw',
+            var calendar = new FullCalendar.Calendar(document.getElementById('full-calendar'), {
+                initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth', locale: 'zh-tw',
                 events: allEvents.map(e => ({ title: e.title, start: e.date, id: e.id, backgroundColor: '#1d4ed8' })),
                 eventClick: function(info) { openEvent(info.event.id); }
             });
