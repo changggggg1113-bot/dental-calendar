@@ -104,13 +104,13 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="addToGoogleCalendar()" class="flex items-center justify-center gap-2 bg-[#4285F4] text-white py-3 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all">
+                    <button onclick="addToGoogleCalendar()" class="flex items-center justify-center gap-2 bg-[#4285F4] text-white py-3 rounded-xl text-[11px] font-bold hover:bg-blue-700 transition-all">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
                         Google 日曆
                     </button>
-                    <button onclick="downloadICS()" class="flex items-center justify-center gap-2 bg-slate-800 text-white py-3 rounded-xl text-xs font-bold hover:bg-black transition-all">
+                    <button onclick="downloadICS()" class="flex items-center justify-center gap-2 bg-slate-800 text-white py-3 rounded-xl text-[11px] font-bold hover:bg-black transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        加入 iPhone 行事曆
+                        加入 iPhone 日曆
                     </button>
                 </div>
 
@@ -124,14 +124,14 @@
         let allEvents = [];
         let favorites = JSON.parse(localStorage.getItem('medcal_favs')) || [];
         let isCreditOnly = false;
-        let currentEvent = null; // 用於紀錄當前視窗內的活動資料
+        let currentEvent = null;
 
         async function init() {
             Papa.parse(sheetUrl, {
                 download: true, header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
-                    allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
                     document.getElementById('loading').style.display = 'none';
                     fillFilterOptions();
                     updateFavNavIcon();
@@ -261,7 +261,7 @@
         function openEvent(id) {
             const ev = allEvents.find(e => e.id == id);
             if(!ev) return;
-            currentEvent = ev; // 賦值給全域變數
+            currentEvent = ev;
             document.getElementById('modal-title').innerText = ev.title;
             document.getElementById('modal-datetime').innerText = `${ev.date} ${ev.time}`;
             document.getElementById('modal-loc').innerText = ev.loc;
@@ -275,7 +275,6 @@
             document.getElementById('eventModal').style.display = 'block';
         }
 
-        // 新增：加入 Google 日曆功能
         function addToGoogleCalendar() {
             if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
@@ -284,7 +283,6 @@
             window.open(url, '_blank');
         }
 
-        // 新增：下載 .ics 檔案功能
         function downloadICS() {
             if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
