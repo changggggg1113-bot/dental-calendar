@@ -18,7 +18,6 @@
         .modal-content { background: white; margin: 5vh auto; padding: 0; border-radius: 24px; width: 95%; max-width: 550px; position: relative; overflow: hidden; }
         #mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
         #mobile-menu.open { transform: translateX(0); }
-        .fav-active { color: #ef4444 !important; }
     </style>
 </head>
 <body class="bg-[#F1F5F9] text-slate-800">
@@ -33,7 +32,7 @@
                 <button onclick="showPage('calendar')" id="nav-calendar" class="h-full px-2">日曆</button>
                 <button onclick="showPage('list')" id="nav-list" class="h-full px-2">列表搜尋</button>
                 <button onclick="showPage('societies')" id="nav-societies" class="h-full px-2">醫學會</button>
-                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 text-red-500">❤️ 我的收藏</button>
+                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 transition-colors">收藏<span id="nav-fav-icon">♡</span></button>
             </div>
             <button class="lg:hidden p-2 text-slate-600" onclick="toggleMobileMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
@@ -47,7 +46,7 @@
         <button onclick="showPage('home')" class="py-4 text-left font-black text-lg border-b">首頁</button>
         <button onclick="showPage('calendar')" class="py-4 text-left font-black text-lg border-b">日曆</button>
         <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表搜尋</button>
-        <button onclick="showPage('fav')" class="py-4 text-left font-black text-lg border-b text-red-500">我的收藏 ❤️</button>
+        <button onclick="showPage('fav')" class="py-4 text-left font-black text-lg border-b">收藏 <span class="mobile-fav-icon">♡</span></button>
     </div>
 
     <main class="max-w-7xl mx-auto p-4 md:p-6 min-h-screen">
@@ -69,7 +68,7 @@
         <div id="page-list" class="page-content space-y-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm space-y-4">
                 <div class="flex gap-2">
-                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋活動、醫師、主辦單位..." class="flex-1 bg-slate-100 border-none rounded-2xl px-6 py-4 text-sm outline-none">
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋關鍵字..." class="flex-1 bg-slate-100 border-none rounded-2xl px-6 py-4 text-sm outline-none">
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <select id="filterOrg" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">所有學會</option></select>
@@ -81,10 +80,10 @@
         </div>
 
         <div id="page-fav" class="page-content space-y-6">
-            <div class="text-center py-10" id="fav-empty">
-                <div class="text-5xl mb-4">❤️</div>
-                <h2 class="text-xl font-black text-slate-900">目前沒有收藏</h2>
-                <p class="text-slate-400 text-sm mt-2">點擊活動右側的心形圖示來收藏課程</p>
+            <div class="text-center py-20" id="fav-empty">
+                <div class="text-4xl mb-4 text-slate-200">♡</div>
+                <h2 class="text-xl font-black text-slate-400">目前沒有收藏的活動</h2>
+                <p class="text-slate-300 text-xs mt-2">在列表中點擊愛心，保存您感興趣的課程</p>
             </div>
             <div id="fav-container" class="space-y-4"></div>
         </div>
@@ -118,11 +117,25 @@
                 download: true, header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
+                    // 預設最新在最上面
                     allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
                     document.getElementById('loading').style.display = 'none';
                     fillFilterOptions();
+                    updateFavNavIcon();
                     renderAll();
                 }
+            });
+        }
+
+        // 更新選單愛心圖示的函式
+        function updateFavNavIcon() {
+            const hasFavs = favorites.length > 0;
+            const icon = hasFavs ? '♥' : '♡';
+            const navIconEl = document.getElementById('nav-fav-icon');
+            if (navIconEl) navIconEl.innerText = icon;
+            
+            document.querySelectorAll('.mobile-fav-icon').forEach(el => {
+                el.innerText = icon;
             });
         }
 
@@ -132,6 +145,7 @@
             if(index > -1) favorites.splice(index, 1);
             else favorites.push(id);
             localStorage.setItem('medcal_favs', JSON.stringify(favorites));
+            updateFavNavIcon(); // 即時更新選單圖示
             renderAll();
         }
 
@@ -205,11 +219,13 @@
         function createCard(ev, style) {
             const dateObj = new Date(ev.date);
             const isFav = favorites.includes(ev.id);
+            const heartIcon = isFav ? '♥' : '♡';
+            
             if (style === 'grid') {
                 return `<div class="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer" onclick="openEvent('${ev.id}')">
                     <div class="flex justify-between items-start mb-4">
                         <div class="text-center"><span class="block text-3xl font-black text-blue-600">${dateObj.getDate()}</span><span class="block text-xs font-bold text-slate-300">${dateObj.getMonth()+1}月</span></div>
-                        <button onclick="toggleFav('${ev.id}', event)" class="text-xl ${isFav ? 'text-red-500' : 'text-slate-200'}">❤️</button>
+                        <button onclick="toggleFav('${ev.id}', event)" class="text-xl ${isFav ? 'text-blue-600' : 'text-slate-200'}">${heartIcon}</button>
                     </div>
                     <h3 class="font-bold text-slate-800 line-clamp-2">${ev.title}</h3>
                 </div>`;
@@ -225,7 +241,7 @@
                     </div>
                     <h4 class="font-bold text-slate-800 truncate text-sm">${ev.title}</h4>
                 </div>
-                <button onclick="toggleFav('${ev.id}', event)" class="p-2 ${isFav ? 'text-red-500' : 'text-slate-200'} text-xl">❤️</button>
+                <button onclick="toggleFav('${ev.id}', event)" class="p-2 ${isFav ? 'text-blue-600' : 'text-slate-200'} text-xl">${heartIcon}</button>
             </div>`;
         }
 
