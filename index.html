@@ -57,6 +57,14 @@
         </div>
         
         <div id="page-home" class="page-content active space-y-12">
+            <section id="recommendation-section" style="display: none;">
+                <div class="flex justify-between items-end mb-6">
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">✨ 為你推薦</h2>
+                    <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">基於您的收藏</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recommendation-grid"></div>
+            </section>
+
             <section>
                 <div class="flex justify-between items-end mb-6">
                     <h2 class="text-2xl font-black text-slate-900">本月精選活動</h2>
@@ -102,18 +110,10 @@
                     <p><strong>地點：</strong><span id="modal-loc"></span></p>
                     <p><strong>主辦：</strong><span id="modal-org"></span></p>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="addToGoogleCalendar()" class="flex items-center justify-center gap-2 bg-[#4285F4] text-white py-3 rounded-xl text-[11px] font-bold hover:bg-blue-700 transition-all">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
-                        Google 日曆
-                    </button>
-                    <button onclick="downloadICS()" class="flex items-center justify-center gap-2 bg-slate-800 text-white py-3 rounded-xl text-[11px] font-bold hover:bg-black transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        加入 iPhone 日曆
-                    </button>
+                    <button onclick="addToGoogleCalendar()" class="flex items-center justify-center gap-2 bg-[#4285F4] text-white py-3 rounded-xl text-[11px] font-bold hover:bg-blue-700 transition-all">Google 日曆</button>
+                    <button onclick="downloadICS()" class="flex items-center justify-center gap-2 bg-slate-800 text-white py-3 rounded-xl text-[11px] font-bold hover:bg-black transition-all">加入 iPhone 日曆</button>
                 </div>
-
                 <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往官方網址</a>
             </div>
         </div>
@@ -131,7 +131,7 @@
                 download: true, header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
-                    allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
                     document.getElementById('loading').style.display = 'none';
                     fillFilterOptions();
                     updateFavNavIcon();
@@ -155,8 +155,6 @@
             else favorites.push(id);
             localStorage.setItem('medcal_favs', JSON.stringify(favorites));
             updateFavNavIcon();
-            const modalFavBtn = document.getElementById('modal-fav-btn');
-            if(modalFavBtn) modalFavBtn.innerText = favorites.includes(id) ? '♥' : '♡';
             renderAll();
         }
 
@@ -192,6 +190,57 @@
             applyFilters();
             renderFavs();
             renderSocieties();
+            renderRecommendations(); // 執行推薦邏輯
+        }
+
+        // --- 核心：個人化推薦邏輯 ---
+        function renderRecommendations() {
+            const recSection = document.getElementById('recommendation-section');
+            const recGrid = document.getElementById('recommendation-grid');
+            
+            // 如果醫師還沒收藏任何東西，不顯示推薦區
+            if (favorites.length === 0) {
+                recSection.style.display = 'none';
+                return;
+            }
+
+            // 1. 分析收藏清單中的偏好
+            const favEvents = allEvents.filter(ev => favorites.includes(ev.id));
+            const prefOrgs = getMostFrequent(favEvents.map(e => e.org));
+            const prefTypes = getMostFrequent(favEvents.map(e => e.type));
+            const prefLocs = getMostFrequent(favEvents.map(e => e.loc.substring(0, 3)));
+
+            // 2. 篩選推薦活動 (排除已收藏的)
+            const recommendations = allEvents.filter(ev => {
+                const isAlreadyFav = favorites.includes(ev.id);
+                if (isAlreadyFav) return false;
+
+                // 評分機制：主辦單位、類型或地區符合，就加分
+                let score = 0;
+                if (prefOrgs.includes(ev.org)) score += 3;
+                if (prefTypes.includes(ev.type)) score += 2;
+                if (prefLocs.includes(ev.loc.substring(0, 3))) score += 1;
+
+                return score >= 2; // 門檻分數
+            });
+
+            // 3. 渲染
+            if (recommendations.length > 0) {
+                recSection.style.display = 'block';
+                recGrid.innerHTML = recommendations.slice(0, 3).map(ev => createCard(ev, 'grid')).join('');
+            } else {
+                recSection.style.display = 'none';
+            }
+        }
+
+        // 輔助函式：找出陣列中出現頻率最高的元素
+        function getMostFrequent(arr) {
+            const counts = arr.reduce((acc, val) => {
+                acc[val] = (acc[val] || 0) + 1;
+                return acc;
+            }, {});
+            const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+            return sorted.slice(0, 2); // 回傳前兩名
         }
 
         function renderHome() {
@@ -267,39 +316,23 @@
             document.getElementById('modal-loc').innerText = ev.loc;
             document.getElementById('modal-org').innerText = ev.org;
             document.getElementById('modal-link').href = ev.url;
-            
             const modalFavBtn = document.getElementById('modal-fav-btn');
             modalFavBtn.innerText = favorites.includes(ev.id) ? '♥' : '♡';
             modalFavBtn.onclick = (e) => toggleFav(ev.id, e);
-            
             document.getElementById('eventModal').style.display = 'block';
         }
 
         function addToGoogleCalendar() {
             if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
-            const end = currentEvent.date.replace(/-/g, '') + 'T170000Z';
-            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentEvent.title)}&dates=${start}/${end}&details=主辦單位:${encodeURIComponent(currentEvent.org)}\n地點:${encodeURIComponent(currentEvent.loc)}&location=${encodeURIComponent(currentEvent.loc)}&sf=true&output=xml`;
+            const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentEvent.title)}&dates=${start}/${start}&location=${encodeURIComponent(currentEvent.loc)}&sf=true&output=xml`;
             window.open(url, '_blank');
         }
 
         function downloadICS() {
             if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
-            const end = currentEvent.date.replace(/-/g, '') + 'T170000Z';
-            const icsData = [
-                'BEGIN:VCALENDAR',
-                'VERSION:2.0',
-                'BEGIN:VEVENT',
-                `DTSTART:${start}`,
-                `DTEND:${end}`,
-                `SUMMARY:${currentEvent.title}`,
-                `DESCRIPTION:主辦單位: ${currentEvent.org}`,
-                `LOCATION:${currentEvent.loc}`,
-                'END:VEVENT',
-                'END:VCALENDAR'
-            ].join('\n');
-            
+            const icsData = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${currentEvent.title}`,`LOCATION:${currentEvent.loc}`,'END:VEVENT','END:VCALENDAR'].join('\n');
             const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
@@ -329,11 +362,7 @@
             const orgs = [...new Set(allEvents.map(e => e.org))];
             const grid = document.getElementById('society-grid');
             if(!grid) return;
-            grid.innerHTML = orgs.map(org => `
-                <div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')">
-                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div>
-                    <h4 class="font-black text-slate-800 text-sm">${org}</h4>
-                </div>`).join('');
+            grid.innerHTML = orgs.map(org => `<div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')"><div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div><h4 class="font-black text-slate-800 text-sm">${org}</h4></div>`).join('');
         }
 
         function filterByOrg(orgName) {
