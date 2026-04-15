@@ -32,7 +32,7 @@
                 <button onclick="showPage('calendar')" id="nav-calendar" class="h-full px-2">日曆</button>
                 <button onclick="showPage('list')" id="nav-list" class="h-full px-2">列表搜尋</button>
                 <button onclick="showPage('societies')" id="nav-societies" class="h-full px-2">醫學會</button>
-                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 transition-colors">收藏<span id="nav-fav-icon">♡</span></button>
+                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 transition-colors">收藏 <span id="nav-fav-icon">♡</span></button>
             </div>
             <button class="lg:hidden p-2 text-slate-600" onclick="toggleMobileMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
@@ -46,6 +46,7 @@
         <button onclick="showPage('home')" class="py-4 text-left font-black text-lg border-b">首頁</button>
         <button onclick="showPage('calendar')" class="py-4 text-left font-black text-lg border-b">日曆</button>
         <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表搜尋</button>
+        <button onclick="showPage('societies')" class="py-4 text-left font-black text-lg border-b">醫學會</button>
         <button onclick="showPage('fav')" class="py-4 text-left font-black text-lg border-b">收藏 <span class="mobile-fav-icon">♡</span></button>
     </div>
 
@@ -88,8 +89,13 @@
             <div id="fav-container" class="space-y-4"></div>
         </div>
 
-        <div id="page-calendar" class="page-content"><div id="full-calendar" class="bg-white p-4 rounded-3xl"></div></div>
-        <div id="page-societies" class="page-content"><div class="grid grid-cols-1 sm:grid-cols-3 gap-6" id="society-grid"></div></div>
+        <div id="page-calendar" class="page-content">
+            <div id="full-calendar" class="bg-white p-4 rounded-3xl shadow-xl"></div>
+        </div>
+
+        <div id="page-societies" class="page-content">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="society-grid"></div>
+        </div>
     </main>
 
     <div id="eventModal" class="modal" onclick="closeModal()">
@@ -117,7 +123,6 @@
                 download: true, header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
-                    // 預設最新在最上面
                     allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
                     document.getElementById('loading').style.display = 'none';
                     fillFilterOptions();
@@ -127,16 +132,12 @@
             });
         }
 
-        // 更新選單愛心圖示的函式
         function updateFavNavIcon() {
             const hasFavs = favorites.length > 0;
             const icon = hasFavs ? '♥' : '♡';
             const navIconEl = document.getElementById('nav-fav-icon');
             if (navIconEl) navIconEl.innerText = icon;
-            
-            document.querySelectorAll('.mobile-fav-icon').forEach(el => {
-                el.innerText = icon;
-            });
+            document.querySelectorAll('.mobile-fav-icon').forEach(el => { el.innerText = icon; });
         }
 
         function toggleFav(id, event) {
@@ -145,7 +146,7 @@
             if(index > -1) favorites.splice(index, 1);
             else favorites.push(id);
             localStorage.setItem('medcal_favs', JSON.stringify(favorites));
-            updateFavNavIcon(); // 即時更新選單圖示
+            updateFavNavIcon();
             renderAll();
         }
 
@@ -209,7 +210,9 @@
                 acc[d].push(ev);
                 return acc;
             }, {});
-            document.getElementById(containerId).innerHTML = Object.keys(groups).map(date => `
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            container.innerHTML = Object.keys(groups).map(date => `
                 <div>
                     <h3 class="text-xs font-black text-slate-400 border-b pb-2 mb-4 tracking-widest uppercase">${date}</h3>
                     <div class="space-y-3">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
@@ -262,12 +265,47 @@
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
-            document.getElementById('page-' + pageId).classList.add('active');
+            
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) targetPage.classList.add('active');
+            
             const btn = document.getElementById('nav-' + pageId);
             if(btn) btn.classList.add('active-nav');
-            if(window.innerWidth < 1024) toggleMobileMenu();
+            
+            updateFavNavIcon(); // 切換分頁時重新確認選單圖示
+            
+            if(window.innerWidth < 1024 && document.getElementById('mobile-menu').classList.contains('open')) toggleMobileMenu();
             if(pageId === 'calendar') renderCalendar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderSocieties() {
+            const orgs = [...new Set(allEvents.map(e => e.org))];
+            const grid = document.getElementById('society-grid');
+            if(!grid) return;
+            grid.innerHTML = orgs.map(org => `
+                <div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div>
+                    <h4 class="font-black text-slate-800 text-sm">${org}</h4>
+                </div>`).join('');
+        }
+
+        function filterByOrg(orgName) {
+            showPage('list');
+            document.getElementById('filterOrg').value = orgName;
+            applyFilters();
+        }
+
+        function renderCalendar() {
+            var calendarEl = document.getElementById('full-calendar');
+            if(!calendarEl) return;
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
+                locale: 'zh-tw',
+                events: allEvents.map(e => ({ title: e.title, start: e.date, id: e.id, backgroundColor: '#1d4ed8' })),
+                eventClick: function(info) { openEvent(info.event.id); }
+            });
+            calendar.render();
         }
 
         init();
