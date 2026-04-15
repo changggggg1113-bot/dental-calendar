@@ -18,6 +18,7 @@
         .modal-content { background: white; margin: 5vh auto; padding: 0; border-radius: 24px; width: 95%; max-width: 550px; position: relative; overflow: hidden; }
         #mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
         #mobile-menu.open { transform: translateX(0); }
+        .fav-active { color: #ef4444 !important; }
     </style>
 </head>
 <body class="bg-[#F1F5F9] text-slate-800">
@@ -32,6 +33,7 @@
                 <button onclick="showPage('calendar')" id="nav-calendar" class="h-full px-2">日曆</button>
                 <button onclick="showPage('list')" id="nav-list" class="h-full px-2">列表搜尋</button>
                 <button onclick="showPage('societies')" id="nav-societies" class="h-full px-2">醫學會</button>
+                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 text-red-500">❤️ 我的收藏</button>
             </div>
             <button class="lg:hidden p-2 text-slate-600" onclick="toggleMobileMenu()">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
@@ -45,13 +47,13 @@
         <button onclick="showPage('home')" class="py-4 text-left font-black text-lg border-b">首頁</button>
         <button onclick="showPage('calendar')" class="py-4 text-left font-black text-lg border-b">日曆</button>
         <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表搜尋</button>
-        <button onclick="showPage('societies')" class="py-4 text-left font-black text-lg border-b">醫學會</button>
+        <button onclick="showPage('fav')" class="py-4 text-left font-black text-lg border-b text-red-500">我的收藏 ❤️</button>
     </div>
 
     <main class="max-w-7xl mx-auto p-4 md:p-6 min-h-screen">
         <div id="loading" class="text-center py-40">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-            <p class="mt-4 text-slate-400 font-medium">Dental MEDcal 同步中...</p>
+            <p class="mt-4 text-slate-400 font-medium">資料同步中...</p>
         </div>
         
         <div id="page-home" class="page-content active space-y-12">
@@ -67,28 +69,33 @@
         <div id="page-list" class="page-content space-y-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm space-y-4">
                 <div class="flex gap-2">
-                    <input type="text" id="searchInput" placeholder="搜尋活動名稱、主辦單位..." class="flex-1 bg-slate-100 border-none rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-blue-600 outline-none">
-                    <button onclick="applyFilters()" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-sm">搜尋</button>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋活動、醫師、主辦單位..." class="flex-1 bg-slate-100 border-none rounded-2xl px-6 py-4 text-sm outline-none">
                 </div>
-                <div class="flex flex-wrap gap-3">
+                <div class="flex flex-wrap gap-2">
                     <select id="filterOrg" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">所有學會</option></select>
-                    <select id="filterLoc" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">所有地區</option></select>
-                    <button id="btnCredit" onclick="toggleCreditFilter()" class="bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2 border border-transparent">🎓 有積分</button>
-                    <button onclick="resetFilters()" class="text-xs text-slate-400 font-bold px-2">清除重設</button>
+                    <select id="filterLoc" onchange="applyFilters()" class="bg-slate-50 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none"><option value="">地區</option></select>
+                    <button id="btnCredit" onclick="toggleCreditFilter()" class="bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2">🎓 有積分</button>
                 </div>
             </div>
-
-            <div class="text-sm font-bold text-slate-400 px-2" id="resultCount">共 -- 個活動</div>
-            <div class="max-w-4xl mx-auto space-y-8" id="agenda-container"></div>
+            <div id="agenda-container" class="space-y-8"></div>
         </div>
 
-        <div id="page-calendar" class="page-content"><div id="full-calendar" class="bg-white p-4 rounded-3xl shadow-xl"></div></div>
+        <div id="page-fav" class="page-content space-y-6">
+            <div class="text-center py-10" id="fav-empty">
+                <div class="text-5xl mb-4">❤️</div>
+                <h2 class="text-xl font-black text-slate-900">目前沒有收藏</h2>
+                <p class="text-slate-400 text-sm mt-2">點擊活動右側的心形圖示來收藏課程</p>
+            </div>
+            <div id="fav-container" class="space-y-4"></div>
+        </div>
+
+        <div id="page-calendar" class="page-content"><div id="full-calendar" class="bg-white p-4 rounded-3xl"></div></div>
         <div id="page-societies" class="page-content"><div class="grid grid-cols-1 sm:grid-cols-3 gap-6" id="society-grid"></div></div>
     </main>
 
     <div id="eventModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="modal-header-color" class="h-24 bg-blue-600 p-6 flex items-end"><h2 id="modal-title" class="text-xl font-black text-white leading-tight line-clamp-2"></h2></div>
+            <div class="h-24 bg-blue-600 p-6 flex items-end"><h2 id="modal-title" class="text-xl font-black text-white leading-tight line-clamp-2"></h2></div>
             <div class="p-6 space-y-6">
                 <div class="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
                     <p><strong>時間：</strong><span id="modal-datetime"></span></p>
@@ -103,12 +110,12 @@
     <script>
         const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpJUZHak3Qd_ya8qFtCHShlQ8NsqeLmE4PqhTS4HAGVaVVwFELaaXcqP-GkQWDh6_v5raIM22SBhP8/pub?output=csv';
         let allEvents = [];
+        let favorites = JSON.parse(localStorage.getItem('medcal_favs')) || [];
         let isCreditOnly = false;
 
         async function init() {
             Papa.parse(sheetUrl, {
-                download: true,
-                header: true,
+                download: true, header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
                     allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -119,131 +126,107 @@
             });
         }
 
-        // 填充下拉選單選項
+        function toggleFav(id, event) {
+            if(event) event.stopPropagation();
+            const index = favorites.indexOf(id);
+            if(index > -1) favorites.splice(index, 1);
+            else favorites.push(id);
+            localStorage.setItem('medcal_favs', JSON.stringify(favorites));
+            renderAll();
+        }
+
         function fillFilterOptions() {
             const orgs = [...new Set(allEvents.map(e => e.org))].sort();
-            const locs = [...new Set(allEvents.map(e => e.loc.substring(0, 3)))].sort(); // 抓前三個字當地區
-            
-            const orgSelect = document.getElementById('filterOrg');
-            orgs.forEach(o => orgSelect.innerHTML += `<option value="${o}">${o}</option>`);
-            
-            const locSelect = document.getElementById('filterLoc');
-            locs.forEach(l => locSelect.innerHTML += `<option value="${l}">${l}</option>`);
+            const locs = [...new Set(allEvents.map(e => e.loc.substring(0, 3)))].sort();
+            orgs.forEach(o => document.getElementById('filterOrg').innerHTML += `<option value="${o}">${o}</option>`);
+            locs.forEach(l => document.getElementById('filterLoc').innerHTML += `<option value="${l}">${l}</option>`);
         }
 
         function toggleCreditFilter() {
             isCreditOnly = !isCreditOnly;
-            const btn = document.getElementById('btnCredit');
-            btn.classList.toggle('bg-blue-100', isCreditOnly);
-            btn.classList.toggle('text-blue-600', isCreditOnly);
-            btn.classList.toggle('border-blue-200', isCreditOnly);
+            document.getElementById('btnCredit').classList.toggle('bg-blue-600', isCreditOnly);
+            document.getElementById('btnCredit').classList.toggle('text-white', isCreditOnly);
             applyFilters();
         }
 
         function applyFilters() {
-            const searchText = document.getElementById('searchInput').value.toLowerCase();
-            const selectedOrg = document.getElementById('filterOrg').value;
-            const selectedLoc = document.getElementById('filterLoc').value;
-
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const org = document.getElementById('filterOrg').value;
+            const loc = document.getElementById('filterLoc').value;
             const filtered = allEvents.filter(ev => {
-                const matchSearch = ev.title.toLowerCase().includes(searchText) || ev.org.toLowerCase().includes(searchText);
-                const matchOrg = selectedOrg === "" || ev.org === selectedOrg;
-                const matchLoc = selectedLoc === "" || ev.loc.includes(selectedLoc);
-                const matchCredit = !isCreditOnly || parseFloat(ev.credit) > 0;
-                return matchSearch && matchOrg && matchLoc && matchCredit;
+                return (ev.title.toLowerCase().includes(q) || ev.org.toLowerCase().includes(q)) &&
+                       (org === "" || ev.org === org) &&
+                       (loc === "" || ev.loc.includes(loc)) &&
+                       (!isCreditOnly || parseFloat(ev.credit) > 0);
             });
-
-            document.getElementById('resultCount').innerText = `共 ${filtered.length} 個活動`;
-            renderList(filtered);
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = "";
-            document.getElementById('filterOrg').value = "";
-            document.getElementById('filterLoc').value = "";
-            isCreditOnly = false;
-            document.getElementById('btnCredit').className = "bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2 border border-transparent";
-            applyFilters();
+            renderList(filtered, 'agenda-container');
         }
 
         function renderAll() {
             renderHome();
-            renderList(allEvents);
+            applyFilters();
+            renderFavs();
             renderSocieties();
         }
 
         function renderHome() {
             const now = new Date();
-            const m = now.getMonth() + 1;
-            const y = now.getFullYear();
-            const thisMonth = allEvents.filter(ev => {
-                const d = new Date(ev.date);
-                return (d.getMonth()+1) === m && d.getFullYear() === y;
-            });
-            const grid = document.getElementById('featured-grid');
-            if(thisMonth.length > 0) {
-                grid.innerHTML = thisMonth.slice(0, 6).map(ev => createCard(ev, 'grid')).join('');
+            const thisMonth = allEvents.filter(ev => new Date(ev.date).getMonth() === now.getMonth()).slice(0, 6);
+            document.getElementById('featured-grid').innerHTML = thisMonth.map(ev => createCard(ev, 'grid')).join('');
+        }
+
+        function renderFavs() {
+            const favEvents = allEvents.filter(ev => favorites.includes(ev.id));
+            const container = document.getElementById('fav-container');
+            const empty = document.getElementById('fav-empty');
+            if(favEvents.length > 0) {
+                empty.style.display = 'none';
+                container.innerHTML = favEvents.map(ev => createCard(ev, 'row')).join('');
             } else {
-                grid.innerHTML = `<p class="col-span-full text-center text-slate-400 py-10">本月無精選活動</p>`;
+                empty.style.display = 'block';
+                container.innerHTML = '';
             }
         }
 
-        function renderList(eventsData) {
-            const groups = eventsData.reduce((acc, ev) => {
+        function renderList(data, containerId) {
+            const groups = data.reduce((acc, ev) => {
                 const d = ev.date;
                 if (!acc[d]) acc[d] = [];
                 acc[d].push(ev);
                 return acc;
             }, {});
-
-            document.getElementById('agenda-container').innerHTML = Object.keys(groups).map(date => `
-                <div class="space-y-4">
-                    <h3 class="text-sm font-black text-slate-400 border-b pb-2 tracking-widest">${date}</h3>
+            document.getElementById(containerId).innerHTML = Object.keys(groups).map(date => `
+                <div>
+                    <h3 class="text-xs font-black text-slate-400 border-b pb-2 mb-4 tracking-widest uppercase">${date}</h3>
                     <div class="space-y-3">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
                 </div>`).join('');
         }
 
         function createCard(ev, style) {
             const dateObj = new Date(ev.date);
-            const d = dateObj.getDate();
-            const m = dateObj.getMonth() + 1;
+            const isFav = favorites.includes(ev.id);
             if (style === 'grid') {
                 return `<div class="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer" onclick="openEvent('${ev.id}')">
-                    <div class="flex gap-4">
-                        <div class="text-center shrink-0"><span class="block text-3xl font-black text-blue-600">${d}</span><span class="block text-xs font-bold text-slate-300">${m}月</span></div>
-                        <div><h3 class="font-bold text-slate-800 line-clamp-2">${ev.title}</h3><p class="text-xs text-slate-400 mt-2">📍 ${ev.loc}</p></div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-center"><span class="block text-3xl font-black text-blue-600">${dateObj.getDate()}</span><span class="block text-xs font-bold text-slate-300">${dateObj.getMonth()+1}月</span></div>
+                        <button onclick="toggleFav('${ev.id}', event)" class="text-xl ${isFav ? 'text-red-500' : 'text-slate-200'}">❤️</button>
                     </div>
+                    <h3 class="font-bold text-slate-800 line-clamp-2">${ev.title}</h3>
                 </div>`;
             }
-            return `<div class="bg-white p-5 rounded-3xl flex items-center gap-6 cursor-pointer border border-transparent hover:border-blue-100 transition-all shadow-sm" onclick="openEvent('${ev.id}')">
-                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex flex-col items-center justify-center shrink-0">
-                    <span class="text-xl font-black text-blue-600">${d}</span>
-                    <span class="text-[10px] font-bold text-blue-300 uppercase">${m}月</span>
+            return `<div class="bg-white p-5 rounded-3xl flex items-center gap-4 cursor-pointer shadow-sm hover:border-blue-100 border border-transparent" onclick="openEvent('${ev.id}')">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex flex-col items-center justify-center shrink-0 font-black text-blue-600">
+                    <span class="text-lg">${dateObj.getDate()}</span><span class="text-[8px] uppercase">${dateObj.getMonth()+1}月</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex gap-2 mb-1">
-                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">${ev.type}</span>
-                        ${parseFloat(ev.credit) > 0 ? `<span class="text-[10px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-md">🎓 ${ev.credit} 學分</span>` : ''}
+                        <span class="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">${ev.type}</span>
+                        ${parseFloat(ev.credit) > 0 ? `<span class="text-[9px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-md">🎓 ${ev.credit}</span>` : ''}
                     </div>
-                    <h4 class="font-bold text-slate-800 truncate text-base">${ev.title}</h4>
-                    <p class="text-xs text-slate-400 mt-1">${ev.org} · ${ev.time}</p>
+                    <h4 class="font-bold text-slate-800 truncate text-sm">${ev.title}</h4>
                 </div>
+                <button onclick="toggleFav('${ev.id}', event)" class="p-2 ${isFav ? 'text-red-500' : 'text-slate-200'} text-xl">❤️</button>
             </div>`;
-        }
-
-        function renderSocieties() {
-            const orgs = [...new Set(allEvents.map(e => e.org))];
-            document.getElementById('society-grid').innerHTML = orgs.map(org => `
-                <div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')">
-                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${allEvents.filter(e => e.org === org).length}</div>
-                    <h4 class="font-black text-slate-800 text-sm">${org}</h4>
-                </div>`).join('');
-        }
-
-        function filterByOrg(orgName) {
-            showPage('list');
-            document.getElementById('filterOrg').value = orgName;
-            applyFilters();
         }
 
         function openEvent(id) {
@@ -258,11 +241,7 @@
         }
 
         function closeModal() { document.getElementById('eventModal').style.display = 'none'; }
-        
-        function toggleMobileMenu() {
-            document.getElementById('mobile-menu').classList.toggle('open');
-            document.getElementById('mobile-menu-overlay').classList.toggle('hidden');
-        }
+        function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('open'); document.getElementById('mobile-menu-overlay').classList.toggle('hidden'); }
 
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
@@ -270,23 +249,9 @@
             document.getElementById('page-' + pageId).classList.add('active');
             const btn = document.getElementById('nav-' + pageId);
             if(btn) btn.classList.add('active-nav');
-            if(window.innerWidth < 1024) {
-                document.getElementById('mobile-menu').classList.remove('open');
-                document.getElementById('mobile-menu-overlay').classList.add('hidden');
-            }
+            if(window.innerWidth < 1024) toggleMobileMenu();
             if(pageId === 'calendar') renderCalendar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function renderCalendar() {
-            var calendarEl = document.getElementById('full-calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
-                locale: 'zh-tw',
-                events: allEvents.map(e => ({ title: e.title, start: e.date, id: e.id, backgroundColor: '#1d4ed8' })),
-                eventClick: function(info) { openEvent(info.event.id); }
-            });
-            calendar.render();
         }
 
         init();
