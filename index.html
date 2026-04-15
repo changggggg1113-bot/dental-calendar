@@ -12,7 +12,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         body { font-family: 'Noto Sans TC', sans-serif; overflow-x: hidden; }
         .active-nav { color: #1d4ed8; border-bottom: 3px solid #1d4ed8; font-weight: 700; }
-        .active-nav-mobile { color: #1d4ed8; background: #eff6ff; border-left: 4px solid #1d4ed8; }
         .page-content { display: none; }
         .page-content.active { display: block; }
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); }
@@ -31,11 +30,11 @@
 
             <div class="hidden lg:flex gap-8 h-full items-center text-sm font-bold text-slate-500">
                 <button onclick="showPage('home')" id="nav-home" class="h-full px-2 active-nav">首頁</button>
-                <button onclick="showPage('calendar')" id="nav-calendar" class="h-full px-2 transition-colors hover:text-blue-600">日曆</button>
-                <button onclick="showPage('list')" id="nav-list" class="h-full px-2 transition-colors hover:text-blue-600">列表</button>
-                <button onclick="showPage('societies')" id="nav-societies" class="h-full px-2 transition-colors hover:text-blue-600">醫學會</button>
-                <button onclick="showPage('search')" id="nav-search" class="h-full px-2 transition-colors hover:text-blue-600">搜尋</button>
-                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 transition-colors hover:text-blue-600">收藏</button>
+                <button onclick="showPage('calendar')" id="nav-calendar" class="h-full px-2">日曆</button>
+                <button onclick="showPage('list')" id="nav-list" class="h-full px-2">列表</button>
+                <button onclick="showPage('societies')" id="nav-societies" class="h-full px-2">醫學會</button>
+                <button onclick="showPage('search')" id="nav-search" class="h-full px-2">搜尋</button>
+                <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2">收藏</button>
             </div>
 
             <button class="lg:hidden p-2 text-slate-600" onclick="toggleMobileMenu()">
@@ -47,7 +46,7 @@
     </header>
 
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden" onclick="toggleMobileMenu()"></div>
-    <div id="mobile-menu" class="fixed top-0 right-0 w-64 h-full bg-white z-[70] shadow-2xl p-6 space-y-4 flex flex-col">
+    <div id="mobile-menu" class="fixed top-0 right-0 w-64 h-full bg-white z-[70] shadow-2xl p-6 flex flex-col">
         <div class="flex justify-end mb-4">
             <button onclick="toggleMobileMenu()" class="text-slate-400">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,71 +54,53 @@
                 </svg>
             </button>
         </div>
-        <button onclick="showPage('home')" class="mobile-nav-item py-4 text-left font-black text-lg border-b border-slate-50">首頁</button>
-        <button onclick="showPage('calendar')" class="mobile-nav-item py-4 text-left font-black text-lg border-b border-slate-50">日曆</button>
-        <button onclick="showPage('list')" class="mobile-nav-item py-4 text-left font-black text-lg border-b border-slate-50">列表</button>
-        <button onclick="showPage('societies')" class="mobile-nav-item py-4 text-left font-black text-lg border-b border-slate-50">醫學會</button>
-        <button onclick="showPage('search')" class="mobile-nav-item py-4 text-left font-black text-lg border-b border-slate-50">搜尋</button>
-        <button onclick="showPage('fav')" class="mobile-nav-item py-4 text-left font-black text-lg border-b border-slate-50">收藏</button>
+        <button onclick="showPage('home')" class="py-4 text-left font-black text-lg border-b">首頁</button>
+        <button onclick="showPage('calendar')" class="py-4 text-left font-black text-lg border-b">日曆</button>
+        <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表</button>
+        <button onclick="showPage('societies')" class="py-4 text-left font-black text-lg border-b">醫學會</button>
     </div>
 
     <main class="max-w-7xl mx-auto p-4 md:p-6 min-h-screen">
         <div id="loading" class="text-center py-40">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-            <p class="mt-4 text-slate-400 font-medium">資料同步中...</p>
+            <p class="mt-4 text-slate-400 font-medium">資料載入中...</p>
         </div>
         
-        <div id="page-home" class="page-content active space-y-8 md:space-y-12">
+        <div id="page-home" class="page-content active space-y-12">
             <section>
                 <div class="flex justify-between items-end mb-6">
-                    <h2 class="text-xl md:text-2xl font-black text-slate-900">本月精選活動</h2>
-                    <span class="text-sm font-bold text-blue-600 cursor-pointer" onclick="showPage('list')">查看全部</span>
+                    <h2 class="text-2xl font-black text-slate-900">本月精選活動</h2>
+                    <span class="text-sm font-bold text-blue-600 cursor-pointer" onclick="showPage('list')">查看全部 →</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-grid"></div>
-            </section>
-
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                    <h2 class="text-lg font-black mb-4 border-l-4 border-blue-600 pl-3">有積分活動</h2>
-                    <div class="space-y-4" id="credit-list"></div>
-                </div>
-                <div>
-                    <h2 class="text-lg font-black mb-4 border-l-4 border-green-500 pl-3">線上活動</h2>
-                    <div class="space-y-4" id="online-list"></div>
-                </div>
             </section>
         </div>
 
         <div id="page-calendar" class="page-content">
-            <div id="full-calendar" class="bg-white p-2 md:p-6 rounded-3xl shadow-xl"></div>
+            <div id="full-calendar" class="bg-white p-4 md:p-6 rounded-3xl shadow-xl"></div>
         </div>
 
         <div id="page-list" class="page-content">
-            <div class="max-w-3xl mx-auto space-y-6" id="agenda-container"></div>
+            <div class="max-w-3xl mx-auto space-y-8" id="agenda-container"></div>
         </div>
 
         <div id="page-societies" class="page-content">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="society-grid"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="society-grid"></div>
         </div>
-
-        <div id="page-search" class="page-content text-center py-20 text-slate-400">搜尋功能開發中...</div>
-        <div id="page-fav" class="page-content text-center py-20 text-slate-400">收藏功能開發中...</div>
     </main>
 
     <div id="eventModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="h-24 bg-gradient-to-r from-blue-600 to-indigo-700 p-6 flex items-end">
-                <h2 id="modal-title" class="text-lg font-black text-white leading-tight line-clamp-2"></h2>
+                <h2 id="modal-title" class="text-xl font-black text-white leading-tight"></h2>
             </div>
             <div class="p-6 space-y-6">
-                <div class="grid grid-cols-1 gap-4 text-sm">
-                    <div class="bg-slate-50 p-3 rounded-xl"><p class="text-slate-400 text-xs mb-1">時間</p><p id="modal-datetime" class="font-bold"></p></div>
-                    <div class="bg-slate-50 p-3 rounded-xl"><p class="text-slate-400 text-xs mb-1">地點</p><p id="modal-loc" class="font-bold"></p></div>
+                <div class="bg-slate-50 p-4 rounded-xl space-y-2">
+                    <p class="text-sm"><strong>時間：</strong><span id="modal-datetime"></span></p>
+                    <p class="text-sm"><strong>地點：</strong><span id="modal-loc"></span></p>
+                    <p class="text-sm"><strong>單位：</strong><span id="modal-org"></span></p>
                 </div>
-                <div class="pt-4 border-t flex flex-col gap-3">
-                    <a id="modal-link" href="#" target="_blank" class="w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往網址</a>
-                    <button onclick="closeModal()" class="w-full py-3 text-slate-400 text-sm font-bold">關閉</button>
-                </div>
+                <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往官方連結</a>
             </div>
         </div>
     </div>
@@ -134,7 +115,10 @@
                 header: true,
                 complete: function(results) {
                     allEvents = results.data.filter(row => row.title && row.date);
-                    allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    // 【關鍵修改】排序邏輯：b - a 代表「從新到舊」
+                    allEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
                     document.getElementById('loading').style.display = 'none';
                     renderAll();
                 }
@@ -142,27 +126,19 @@
         }
 
         function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
-            const overlay = document.getElementById('mobile-menu-overlay');
-            menu.classList.toggle('open');
-            overlay.classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('open');
+            document.getElementById('mobile-menu-overlay').classList.toggle('hidden');
         }
 
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('nav button, .mobile-nav-item').forEach(b => b.classList.remove('active-nav', 'active-nav-mobile'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
             
             document.getElementById('page-' + pageId).classList.add('active');
-            const navBtn = document.getElementById('nav-' + pageId);
-            if(navBtn) navBtn.classList.add('active-nav');
+            const btn = document.getElementById('nav-' + pageId);
+            if(btn) btn.classList.add('active-nav');
 
-            if(window.innerWidth < 1024) {
-                const mobileMenu = document.getElementById('mobile-menu');
-                const overlay = document.getElementById('mobile-menu-overlay');
-                mobileMenu.classList.remove('open');
-                overlay.classList.add('hidden');
-            }
-
+            if(window.innerWidth < 1024) toggleMobileMenu();
             if(pageId === 'calendar') renderCalendar();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -187,37 +163,35 @@
             if(thisMonthEvents.length > 0) {
                 grid.innerHTML = thisMonthEvents.slice(0, 6).map(ev => createCard(ev, 'grid')).join('');
             } else {
-                grid.innerHTML = `<p class="col-span-full text-center py-10 text-slate-400">本月尚無精選活動</p>`;
+                grid.innerHTML = `<div class="col-span-full py-10 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">本月暫無精選活動</div>`;
             }
-
-            document.getElementById('credit-list').innerHTML = allEvents.filter(e => parseFloat(e.credit) > 0).slice(0, 4).map(ev => createCard(ev, 'row')).join('');
-            document.getElementById('online-list').innerHTML = allEvents.filter(e => e.type.includes('線上')).slice(0, 4).map(ev => createCard(ev, 'row')).join('');
         }
 
         function createCard(ev, style) {
             const dateObj = new Date(ev.date);
             const d = dateObj.getDate();
             const m = dateObj.getMonth() + 1;
+            
             if (style === 'grid') {
                 return `
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-transparent hover:border-blue-100 cursor-pointer" onclick="openEvent('${ev.id}')">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all cursor-pointer" onclick="openEvent('${ev.id}')">
                         <div class="flex gap-4">
-                            <div class="text-center shrink-0 w-12">
-                                <span class="block text-2xl font-black text-blue-600">${d}</span>
-                                <span class="block text-[10px] font-bold text-slate-300">${m}月</span>
+                            <div class="text-center shrink-0">
+                                <span class="block text-3xl font-black text-blue-600">${d}</span>
+                                <span class="block text-xs font-bold text-slate-300">${m}月</span>
                             </div>
-                            <div class="space-y-2">
-                                <span class="inline-block bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-full font-bold">${ev.cate}</span>
-                                <h3 class="font-bold text-base leading-tight text-slate-800 line-clamp-2">${ev.title}</h3>
+                            <div>
+                                <h3 class="font-bold text-slate-800 leading-tight mb-2 line-clamp-2">${ev.title}</h3>
+                                <p class="text-xs text-slate-400">📍 ${ev.loc}</p>
                             </div>
                         </div>
                     </div>`;
             }
             return `
-                <div class="bg-white p-4 rounded-2xl flex items-center gap-4 border border-slate-50 cursor-pointer" onclick="openEvent('${ev.id}')">
-                    <div class="w-10 h-10 bg-slate-50 rounded-lg flex flex-col items-center justify-center shrink-0">
-                        <span class="text-sm font-bold text-slate-700">${d}</span>
-                        <span class="text-[8px] text-slate-400">${m}月</span>
+                <div class="bg-white p-4 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition-colors" onclick="openEvent('${ev.id}')">
+                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex flex-col items-center justify-center shrink-0 text-blue-600 font-bold">
+                        <span class="text-sm">${d}</span>
+                        <span class="text-[8px] uppercase">${m}月</span>
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold text-sm text-slate-800 truncate">${ev.title}</h4>
@@ -227,6 +201,7 @@
         }
 
         function renderList() {
+            // 因為 allEvents 已經排好序，這裡分組後也會維持最新的在上面
             const groups = allEvents.reduce((acc, ev) => {
                 const d = ev.date;
                 if (!acc[d]) acc[d] = [];
@@ -235,21 +210,22 @@
             }, {});
 
             document.getElementById('agenda-container').innerHTML = Object.keys(groups).map(date => `
-                <div class="space-y-3">
-                    <h3 class="text-xs font-bold text-slate-400 tracking-widest uppercase border-b pb-1">${date}</h3>
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black text-slate-400 border-b pb-2 tracking-widest uppercase">${date}</h3>
                     <div class="space-y-2">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div>
                 </div>`).join('');
         }
 
         function renderSocieties() {
             const orgs = [...new Set(allEvents.map(e => e.org))];
-            document.getElementById('society-grid').innerHTML = orgs.map(org => `
-                <div class="bg-white p-6 rounded-2xl text-center shadow-sm cursor-pointer" onclick="filterByOrg('${org}')">
-                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 font-black text-xl">
-                        ${allEvents.filter(e => e.org === org).length}
-                    </div>
-                    <h4 class="font-bold text-sm text-slate-800">${org}</h4>
-                </div>`).join('');
+            document.getElementById('society-grid').innerHTML = orgs.map(org => {
+                const count = allEvents.filter(e => e.org === org).length;
+                return `
+                    <div class="bg-white p-8 rounded-3xl text-center shadow-sm hover:shadow-md cursor-pointer transition-all" onclick="filterByOrg('${org}')">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 font-black text-2xl">${count}</div>
+                        <h4 class="font-black text-slate-800 text-sm">${org}</h4>
+                    </div>`;
+            }).join('');
         }
 
         function filterByOrg(orgName) {
@@ -261,7 +237,9 @@
                 acc[d].push(ev);
                 return acc;
             }, {});
-            document.getElementById('agenda-container').innerHTML = `<div class="bg-blue-600 text-white p-4 rounded-2xl mb-4 flex justify-between items-center"><h2 class="font-bold">${orgName}</h2><button onclick="renderList()" class="text-xs bg-white/20 px-2 py-1 rounded-lg">全部</button></div>` + Object.keys(groups).map(date => `<div class="space-y-3"><h3 class="text-xs font-bold text-slate-400 border-b pb-1">${date}</h3><div class="space-y-2">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div></div>`).join('');
+            const container = document.getElementById('agenda-container');
+            container.innerHTML = `<div class="bg-blue-600 text-white p-6 rounded-3xl mb-6 flex justify-between items-center"><h2 class="font-black">${orgName}</h2><button onclick="renderList()" class="bg-white/20 px-3 py-1 rounded-lg text-xs">清除</button></div>` + 
+                Object.keys(groups).map(date => `<div class="space-y-4"><h3 class="text-sm font-black text-slate-400 border-b pb-2">${date}</h3><div class="space-y-2">${groups[date].map(ev => createCard(ev, 'row')).join('')}</div></div>`).join('');
         }
 
         function openEvent(id) {
@@ -269,6 +247,7 @@
             if(!ev) return;
             document.getElementById('modal-title').innerText = ev.title;
             document.getElementById('modal-datetime').innerText = `${ev.date} ${ev.time}`;
+            document.getElementById('modal-org').innerText = ev.org;
             document.getElementById('modal-loc').innerText = ev.loc;
             document.getElementById('modal-link').href = ev.url;
             document.getElementById('eventModal').style.display = 'block';
