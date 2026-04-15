@@ -18,7 +18,6 @@
         .modal-content { background: white; margin: 5vh auto; padding: 0; border-radius: 24px; width: 95%; max-width: 550px; position: relative; overflow: hidden; }
         #mobile-menu { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
         #mobile-menu.open { transform: translateX(0); }
-        /* 隱藏捲軸但保持滾動 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -38,18 +37,17 @@
                 <button onclick="showPage('fav')" id="nav-fav" class="h-full px-2 transition-colors">收藏 <span id="nav-fav-icon">♡</span></button>
             </div>
             <button class="lg:hidden p-2 text-slate-600" onclick="toggleMobileMenu()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16m-7 6h7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
         </nav>
     </header>
 
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-[60] hidden" onclick="toggleMobileMenu()"></div>
     <div id="mobile-menu" class="fixed top-0 right-0 w-64 h-full bg-white z-[70] shadow-2xl p-6 flex flex-col">
-        <div class="flex justify-end mb-4"><button onclick="toggleMobileMenu()" class="text-slate-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+        <div class="flex justify-end mb-4"><button onclick="toggleMobileMenu()" class="text-slate-400"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
         <button onclick="showPage('home')" class="py-4 text-left font-black text-lg border-b">首頁</button>
         <button onclick="showPage('calendar')" class="py-4 text-left font-black text-lg border-b">日曆</button>
         <button onclick="showPage('list')" class="py-4 text-left font-black text-lg border-b">列表搜尋</button>
-        <button onclick="showPage('societies')" class="py-4 text-left font-black text-lg border-b">醫學會</button>
         <button onclick="showPage('fav')" class="py-4 text-left font-black text-lg border-b">收藏 <span class="mobile-fav-icon">♡</span></button>
     </div>
 
@@ -60,9 +58,10 @@
         </div>
         
         <div id="page-home" class="page-content active space-y-12">
-            <section id="recommendation-section" style="display: none;">
+            <section id="recommendation-section">
                 <div class="flex justify-between items-end mb-6">
-                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2">✨ 為你推薦</h2>
+                    <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2" id="rec-title">✨ 為你推薦</h2>
+                    <span id="rec-tag" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">探索中</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="recommendation-grid"></div>
             </section>
@@ -85,9 +84,7 @@
                         <button onclick="setQuickSearch('植牙')" class="shrink-0 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all"># 植牙</button>
                         <button onclick="setQuickSearch('矯正')" class="shrink-0 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all"># 矯正</button>
                         <button onclick="setQuickSearch('數位')" class="shrink-0 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-600 hover:text-white transition-all"># 數位牙科</button>
-                        <button onclick="setQuickSearch('GP')" class="shrink-0 px-4 py-2 bg-slate-100 text-slate-600 rounded-full text-xs font-bold border border-slate-200 hover:bg-slate-600 hover:text-white transition-all"># GP</button>
                         <button onclick="setQuickSearch('GBR')" class="shrink-0 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all"># GBR手術</button>
-                        <button onclick="setQuickSearch('數位取模')" class="shrink-0 px-4 py-2 bg-cyan-50 text-cyan-600 rounded-full text-xs font-bold border border-cyan-100 hover:bg-cyan-600 hover:text-white transition-all"># 數位取模</button>
                         <button onclick="setQuickSearch('再生')" class="shrink-0 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"># 再生醫學</button>
                     </div>
                 </div>
@@ -118,7 +115,10 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="h-24 bg-blue-600 p-6 flex justify-between items-end">
                 <h2 id="modal-title" class="text-xl font-black text-white leading-tight line-clamp-2 pr-4"></h2>
-                <button id="modal-fav-btn" class="text-2xl text-white mb-1">♡</button>
+                <button id="modal-fav-btn" class="flex flex-col items-center transition-all">
+                    <span id="modal-fav-heart" class="text-2xl leading-none">♡</span>
+                    <span id="modal-fav-text" class="text-[8px] font-bold text-white/70 mt-1 uppercase">Save</span>
+                </button>
             </div>
             <div class="p-6 space-y-6">
                 <div class="bg-slate-50 p-4 rounded-xl space-y-2 text-sm">
@@ -127,10 +127,10 @@
                     <p><strong>主辦：</strong><span id="modal-org"></span></p>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="addToGoogleCalendar()" class="bg-[#4285F4] text-white py-3 rounded-xl text-xs font-bold">Google 日曆</button>
-                    <button onclick="downloadICS()" class="bg-slate-800 text-white py-3 rounded-xl text-xs font-bold">加入 iPhone 日曆</button>
+                    <button onclick="addToGoogleCalendar()" class="bg-[#4285F4] text-white py-3 rounded-xl text-xs font-bold hover:bg-blue-700">Google 日曆</button>
+                    <button onclick="downloadICS()" class="bg-slate-800 text-white py-3 rounded-xl text-xs font-bold hover:bg-black">加入 iPhone</button>
                 </div>
-                <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black">前往官方網址</a>
+                <a id="modal-link" href="#" target="_blank" class="block w-full bg-blue-600 text-white text-center py-4 rounded-xl font-black shadow-lg shadow-blue-100">前往官方網址</a>
             </div>
         </div>
     </div>
@@ -157,23 +157,6 @@
             });
         }
 
-        // 快捷標籤搜尋
-        function setQuickSearch(tag) {
-            document.getElementById('searchInput').value = tag;
-            applyFilters();
-            // 自動滾動到結果
-            document.getElementById('agenda-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = "";
-            document.getElementById('filterOrg').value = "";
-            document.getElementById('filterLoc').value = "";
-            isCreditOnly = false;
-            document.getElementById('btnCredit').className = "bg-slate-50 text-slate-500 text-xs font-bold rounded-xl px-4 py-2";
-            applyFilters();
-        }
-
         function updateFavNavIcon() {
             const hasFavs = favorites.length > 0;
             const icon = hasFavs ? '♥' : '♡';
@@ -184,22 +167,27 @@
 
         function toggleFav(id, event) {
             if(event) event.stopPropagation();
-            if (Notification.permission === "default") Notification.requestPermission();
             const index = favorites.indexOf(id);
             if(index > -1) favorites.splice(index, 1);
             else favorites.push(id);
             localStorage.setItem('medcal_favs', JSON.stringify(favorites));
+            
             updateFavNavIcon();
+            updateModalFavUI(id); // 更新 Modal 視覺
             renderAll();
         }
 
-        function checkUpcomingReminders() {
-            if (Notification.permission !== "granted") return;
-            const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-            const tomorrowEvents = allEvents.filter(ev => favorites.includes(ev.id) && ev.date === tomorrowStr);
-            tomorrowEvents.forEach(ev => {
-                new Notification("Dental MEDcal 提醒", { body: `明天活動：${ev.title}`, icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" });
-            });
+        // 修改：更新 Modal 內部的收藏狀態 UI
+        function updateModalFavUI(id) {
+            const heart = document.getElementById('modal-fav-heart');
+            const text = document.getElementById('modal-fav-text');
+            if(!heart || !currentEvent || currentEvent.id !== id) return;
+
+            const isFav = favorites.includes(id);
+            heart.innerText = isFav ? '♥' : '♡';
+            heart.style.color = isFav ? '#FFD700' : 'white'; // 收藏後變黃色
+            text.innerText = isFav ? 'Saved' : 'Save';
+            text.style.color = isFav ? '#FFD700' : 'white';
         }
 
         function fillFilterOptions() {
@@ -209,11 +197,10 @@
             locs.forEach(l => document.getElementById('filterLoc').innerHTML += `<option value="${l}">${l}</option>`);
         }
 
-        function toggleCreditFilter() {
-            isCreditOnly = !isCreditOnly;
-            document.getElementById('btnCredit').classList.toggle('bg-blue-600', isCreditOnly);
-            document.getElementById('btnCredit').classList.toggle('text-white', isCreditOnly);
+        function setQuickSearch(tag) {
+            document.getElementById('searchInput').value = tag;
             applyFilters();
+            document.getElementById('agenda-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function applyFilters() {
@@ -237,17 +224,35 @@
             renderRecommendations();
         }
 
+        // 修改：冷啟動推薦邏輯
         function renderRecommendations() {
             const recSection = document.getElementById('recommendation-section');
             const recGrid = document.getElementById('recommendation-grid');
-            if (favorites.length === 0) { recSection.style.display = 'none'; return; }
-            const favEvents = allEvents.filter(ev => favorites.includes(ev.id));
-            const prefOrgs = getMostFrequent(favEvents.map(e => e.org));
-            const recommendations = allEvents.filter(ev => !favorites.includes(ev.id) && prefOrgs.includes(ev.org));
-            if (recommendations.length > 0) {
-                recSection.style.display = 'block';
-                recGrid.innerHTML = recommendations.slice(0, 3).map(ev => createCard(ev, 'grid')).join('');
-            } else { recSection.style.display = 'none'; }
+            const recTitle = document.getElementById('rec-title');
+            const recTag = document.getElementById('rec-tag');
+
+            let recommendations = [];
+
+            if (favorites.length === 0) {
+                // 1. 沒收藏時：顯示隨機或熱門 (目前以隨機抽 3 個為例)
+                recTitle.innerText = "🔥 熱門活動";
+                recTag.innerText = "為您推薦";
+                recommendations = [...allEvents].sort(() => 0.5 - Math.random()).slice(0, 3);
+            } else {
+                // 2. 有收藏時：執行個人化邏輯
+                recTitle.innerText = "✨ 為你推薦";
+                recTag.innerText = "基於收藏";
+                const favEvents = allEvents.filter(ev => favorites.includes(ev.id));
+                const prefOrgs = getMostFrequent(favEvents.map(e => e.org));
+                recommendations = allEvents.filter(ev => !favorites.includes(ev.id) && prefOrgs.includes(ev.org));
+                
+                // 如果根據標籤沒搜到，就補熱門
+                if (recommendations.length < 3) {
+                    recommendations = [...recommendations, ...allEvents.filter(e => !favorites.includes(e.id))].slice(0, 3);
+                }
+            }
+
+            recGrid.innerHTML = recommendations.slice(0, 3).map(ev => createCard(ev, 'grid')).join('');
         }
 
         function getMostFrequent(arr) {
@@ -310,7 +315,6 @@
                 <div class="flex-1 min-w-0">
                     <div class="flex gap-2 mb-1">
                         <span class="text-[9px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">${ev.type}</span>
-                        ${parseFloat(ev.credit) > 0 ? `<span class="text-[9px] font-bold bg-orange-50 text-orange-600 px-2 py-0.5 rounded-md">🎓 ${ev.credit}</span>` : ''}
                     </div>
                     <h4 class="font-bold text-slate-800 truncate text-sm">${ev.title}</h4>
                 </div>
@@ -327,9 +331,11 @@
             document.getElementById('modal-loc').innerText = ev.loc;
             document.getElementById('modal-org').innerText = ev.org;
             document.getElementById('modal-link').href = ev.url;
+            
             const modalFavBtn = document.getElementById('modal-fav-btn');
-            modalFavBtn.innerText = favorites.includes(ev.id) ? '♥' : '♡';
             modalFavBtn.onclick = (e) => toggleFav(ev.id, e);
+            updateModalFavUI(ev.id); // 初始化 Modal 內的愛心顏色與文字
+            
             document.getElementById('eventModal').style.display = 'block';
         }
 
@@ -340,7 +346,7 @@
 
         function downloadICS() {
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
-            const icsData = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${currentEvent.title}`,`LOCATION:${currentEvent.loc}`,'END:VEVENT','END:VCALENDAR'].join('\n');
+            const icsData = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${currentEvent.title}`,'END:VEVENT','END:VCALENDAR'].join('\n');
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(new Blob([icsData], { type: 'text/calendar;charset=utf-8' }));
             link.setAttribute('download', `${currentEvent.title}.ics`);
