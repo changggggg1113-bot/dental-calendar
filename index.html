@@ -54,18 +54,9 @@
                     <h1 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight tracking-wider">掌握每一場 <span class="text-blue-600">牙科醫學盛會</span></h1>
                     <p class="text-slate-400 text-sm md:text-lg font-medium max-w-2xl mx-auto leading-relaxed tracking-wide">為專業醫師打造的質感日曆，整合全台學術資訊。<br>一鍵加入收藏與系統提醒，讓成長變得優雅從容。</p>
                     <div class="flex justify-center gap-12 md:gap-20 pt-10">
-                        <div class="text-center">
-                            <span class="block text-3xl font-black text-slate-800" id="stat-event-count">0</span>
-                            <span class="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">刊登活動</span>
-                        </div>
-                        <div class="text-center">
-                            <span class="block text-3xl font-black text-slate-800" id="stat-org-count">0</span>
-                            <span class="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">醫學單位</span>
-                        </div>
-                        <div class="text-center">
-                            <span class="block text-3xl font-black text-slate-800">2026</span>
-                            <span class="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">年度</span>
-                        </div>
+                        <div class="text-center"><span class="block text-3xl font-black text-slate-800" id="stat-event-count">0</span><span class="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">刊登活動</span></div>
+                        <div class="text-center"><span class="block text-3xl font-black text-slate-800" id="stat-org-count">0</span><span class="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">醫學單位</span></div>
+                        <div class="text-center"><span class="block text-3xl font-black text-slate-800">2026</span><span class="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">年度</span></div>
                     </div>
                 </div>
             </section>
@@ -90,7 +81,10 @@
 
         <div id="page-list" class="page-content space-y-8">
             <div class="bg-white p-8 rounded-[2.5rem] shadow-sm space-y-8 border border-slate-50">
-                <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋關鍵字..." class="w-full bg-slate-50/50 border border-slate-100 rounded-[1.25rem] px-8 py-5 text-base outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all">
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋關鍵字..." class="w-full bg-slate-50/50 border border-slate-100 rounded-[1.25rem] px-8 py-5 text-base outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all">
+                    <button onclick="applyFilters()" class="absolute right-4 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm">搜尋</button>
+                </div>
                 <div class="flex overflow-x-auto no-scrollbar gap-3 pb-1" id="tag-container">
                     <button onclick="setQuickSearch('GBR', this)" class="quick-tag shrink-0 px-6 py-3 bg-white text-slate-500 rounded-2xl text-xs font-bold border border-slate-100 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"># GBR手術</button>
                     <button onclick="setQuickSearch('數位取模', this)" class="quick-tag shrink-0 px-6 py-3 bg-white text-slate-500 rounded-2xl text-xs font-bold border border-slate-100 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"># 數位取模</button>
@@ -102,7 +96,7 @@
                     <select id="filterOrg" onchange="applyFilters()" class="bg-slate-50/50 border border-slate-100 text-xs font-bold rounded-xl px-5 py-3 outline-none hover:bg-white transition-all"><option value="">所有學會</option></select>
                     <select id="filterLoc" onchange="applyFilters()" class="bg-slate-50/50 border border-slate-100 text-xs font-bold rounded-xl px-5 py-3 outline-none hover:bg-white transition-all"><option value="">所有地區</option></select>
                     <button id="btnCredit" onclick="toggleCreditFilter()" class="bg-slate-50/50 border border-slate-100 text-slate-500 text-xs font-bold rounded-xl px-5 py-3 transition-all hover:bg-white">🎓 有積分</button>
-                    <button onclick="resetFilters()" class="text-xs text-slate-300 font-bold px-4 ml-auto hover:text-red-400">清除篩選</button>
+                    <button onclick="resetFilters()" class="text-xs text-slate-300 font-bold px-4 ml-auto hover:text-red-400 transition-colors">清除篩選</button>
                 </div>
             </div>
             <div id="agenda-container" class="space-y-10 pt-4"></div>
@@ -118,7 +112,7 @@
             <div class="h-32 bg-slate-900 p-8 flex justify-between items-end relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 border-[20px] border-white/5 rounded-full -mr-10 -mt-10"></div>
                 <h2 id="modal-title" class="text-xl font-black text-white leading-relaxed pr-6 z-10 tracking-wide"></h2>
-                <button id="modal-fav-btn" onclick="toggleFav(currentEvent.id, event)" class="flex flex-col items-center z-10 outline-none">
+                <button id="modal-fav-btn" onclick="toggleFav(currentEvent ? currentEvent.id : null, event)" class="flex flex-col items-center z-10 outline-none">
                     <span id="modal-fav-heart" class="text-3xl leading-none transition-all">♡</span>
                     <span id="modal-fav-text" class="text-[9px] font-bold text-white/50 mt-1 uppercase tracking-widest transition-all">Save</span>
                 </button>
@@ -170,8 +164,12 @@
             document.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('tag-active'));
             if(btn) btn.classList.add('tag-active');
             document.getElementById('searchInput').value = tag;
-            applyFilters();
-            showPage('list');
+            showPage('list'); // 跳轉到列表
+            applyFilters();   // 執行篩選
+            // 捲動到結果區
+            setTimeout(() => {
+                document.getElementById('agenda-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
 
         function resetFilters() {
@@ -191,14 +189,14 @@
         }
 
         function toggleFav(id, event) {
+            if(!id) return;
             if(event) event.stopPropagation();
             const index = favorites.indexOf(id);
             if(index > -1) favorites.splice(index, 1);
             else favorites.push(id);
             localStorage.setItem('medcal_favs', JSON.stringify(favorites));
-            
             updateFavNavIcon();
-            updateModalFavUI(id); // 這裡會立刻更新畫面的愛心
+            updateModalFavUI(id);
             renderAll();
         }
 
@@ -206,25 +204,25 @@
             const heart = document.getElementById('modal-fav-heart');
             const text = document.getElementById('modal-fav-text');
             if(!heart || !text) return;
-            
             const isFav = favorites.includes(id);
             heart.innerText = isFav ? '♥' : '♡';
-            heart.style.color = isFav ? '#FFD700' : 'white'; // 收藏後變黃色
+            heart.style.color = isFav ? '#FFD700' : 'white';
             text.innerText = isFav ? 'Saved' : 'Save';
             text.style.color = isFav ? '#FFD700' : 'rgba(255, 255, 255, 0.5)';
         }
 
         function fillFilterOptions() {
             const orgs = [...new Set(allEvents.map(e => e.org))].sort();
-            const locs = [...new Set(allEvents.map(e => e.loc.substring(0, 3)))].sort();
+            const locs = [...new Set(allEvents.map(e => e.loc ? e.loc.substring(0, 3) : ""))].sort();
             const orgSelect = document.getElementById('filterOrg');
             const locSelect = document.getElementById('filterLoc');
-            orgs.forEach(o => orgSelect.innerHTML += `<option value="${o}">${o}</option>`);
-            locs.forEach(l => locSelect.innerHTML += `<option value="${l}">${l}</option>`);
+            orgSelect.innerHTML = '<option value="">所有學會</option>' + orgs.map(o => `<option value="${o}">${o}</option>`).join('');
+            locSelect.innerHTML = '<option value="">所有地區</option>' + locs.filter(l => l).map(l => `<option value="${l}">${l}</option>`).join('');
         }
 
         function toggleCreditFilter() {
             isCreditOnly = !isCreditOnly;
+            document.getElementById('btnCredit').classList.toggle('tag-active', isCreditOnly);
             applyFilters();
         }
 
@@ -232,11 +230,13 @@
             const q = document.getElementById('searchInput').value.toLowerCase();
             const org = document.getElementById('filterOrg').value;
             const loc = document.getElementById('filterLoc').value;
+            
             const filtered = allEvents.filter(ev => {
-                return (ev.title.toLowerCase().includes(q) || ev.org.toLowerCase().includes(q) || (ev.type && ev.type.toLowerCase().includes(q))) &&
-                       (org === "" || ev.org === org) &&
-                       (loc === "" || ev.loc.includes(loc)) &&
-                       (!isCreditOnly || (ev.credit && parseFloat(ev.credit) > 0));
+                const matchQuery = (ev.title.toLowerCase().includes(q) || ev.org.toLowerCase().includes(q) || (ev.type && ev.type.toLowerCase().includes(q)));
+                const matchOrg = (org === "" || ev.org === org);
+                const matchLoc = (loc === "" || (ev.loc && ev.loc.includes(loc)));
+                const matchCredit = (!isCreditOnly || (ev.credit && parseFloat(ev.credit) > 0));
+                return matchQuery && matchOrg && matchLoc && matchCredit;
             });
             renderList(filtered, 'agenda-container');
         }
@@ -246,11 +246,13 @@
             renderFavs();
             renderSocieties();
             renderRecommendations();
+            applyFilters(); // 確保目前的列表符合搜尋條件
         }
 
         function renderRecommendations() {
             const recGrid = document.getElementById('recommendation-grid');
             const recTitle = document.getElementById('rec-title');
+            if(!recGrid) return;
             let recommendations = [];
             if (favorites.length === 0) {
                 recTitle.innerText = "🔥 探索活動";
@@ -280,11 +282,12 @@
             const favEvents = allEvents.filter(ev => favorites.includes(ev.id));
             const container = document.getElementById('fav-container');
             const empty = document.getElementById('fav-empty');
+            if(!container) return;
             if(favEvents.length > 0) {
-                empty.style.display = 'none';
+                if(empty) empty.style.display = 'none';
                 container.innerHTML = favEvents.map(ev => createCard(ev, 'row')).join('');
             } else {
-                empty.style.display = 'block';
+                if(empty) empty.style.display = 'block';
                 container.innerHTML = '';
             }
         }
@@ -298,6 +301,10 @@
             }, {});
             const container = document.getElementById(containerId);
             if(!container) return;
+            if(data.length === 0) {
+                container.innerHTML = '<div class="py-20 text-center text-slate-300 font-bold">找不到相關活動</div>';
+                return;
+            }
             container.innerHTML = Object.keys(groups).map(date => `
                 <div>
                     <h3 class="text-[11px] font-black text-slate-300 mb-6 tracking-[0.3em] uppercase pl-1">${date}</h3>
@@ -310,7 +317,7 @@
             const isFav = favorites.includes(ev.id);
             const heartIcon = isFav ? '♥' : '♡';
             if (style === 'grid') {
-                return `<div class="bg-white p-10 rounded-[2.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-slate-50 group" onclick="openEvent('${ev.id}')">
+                return `<div class="bg-white p-10 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all cursor-pointer border border-slate-50 group" onclick="openEvent('${ev.id}')">
                     <div class="flex justify-between items-start mb-8">
                         <div class="text-center"><span class="block text-4xl font-black text-slate-800">${dateObj.getDate()}</span><span class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-1">${dateObj.getMonth()+1}月</span></div>
                         <button onclick="toggleFav('${ev.id}', event)" class="text-2xl ${isFav ? 'text-blue-600' : 'text-slate-200'} transition-transform active:scale-75">${heartIcon}</button>
@@ -339,16 +346,18 @@
             document.getElementById('modal-loc').innerText = ev.loc;
             document.getElementById('modal-org').innerText = ev.org;
             document.getElementById('modal-link').href = ev.url;
-            updateModalFavUI(id); // 打開 Modal 時先初始化 UI
+            updateModalFavUI(id);
             document.getElementById('eventModal').style.display = 'block';
         }
 
         function addToGoogleCalendar() {
+            if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
             window.open(`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(currentEvent.title)}&dates=${start}/${start}&location=${encodeURIComponent(currentEvent.loc)}`, '_blank');
         }
 
         function downloadICS() {
+            if(!currentEvent) return;
             const start = currentEvent.date.replace(/-/g, '') + 'T090000Z';
             const icsData = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${currentEvent.title}`,'END:VEVENT','END:VCALENDAR'].join('\n');
             const link = document.createElement('a');
@@ -376,12 +385,21 @@
 
         function renderSocieties() {
             const orgs = [...new Set(allEvents.map(e => e.org))];
-            document.getElementById('society-grid').innerHTML = orgs.map(org => `<div class="bg-white p-12 rounded-[2.5rem] text-center shadow-sm hover:shadow-md cursor-pointer transition-all border border-slate-50" onclick="filterByOrg('${org}')"><div class="w-20 h-20 bg-slate-50 text-slate-400 rounded-3xl flex items-center justify-center mx-auto mb-6 font-black text-3xl">${allEvents.filter(e => e.org === org).length}</div><h4 class="font-black text-slate-800 text-sm tracking-wide">${org}</h4></div>`).join('');
+            const societyGrid = document.getElementById('society-grid');
+            if(!societyGrid) return;
+            societyGrid.innerHTML = orgs.map(org => `<div class="bg-white p-12 rounded-[2.5rem] text-center shadow-sm hover:shadow-md cursor-pointer transition-all border border-slate-50" onclick="filterByOrg('${org}')"><div class="w-20 h-20 bg-slate-50 text-slate-400 rounded-3xl flex items-center justify-center mx-auto mb-6 font-black text-3xl">${allEvents.filter(e => e.org === org).length}</div><h4 class="font-black text-slate-800 text-sm tracking-wide">${org}</h4></div>`).join('');
         }
 
-        function filterByOrg(orgName) { showPage('list'); document.getElementById('filterOrg').value = orgName; applyFilters(); }
+        function filterByOrg(orgName) { 
+            showPage('list'); 
+            document.getElementById('filterOrg').value = orgName; 
+            applyFilters(); 
+        }
+        
         function renderCalendar() {
-            var calendar = new FullCalendar.Calendar(document.getElementById('full-calendar'), {
+            var calendarEl = document.getElementById('full-calendar');
+            if(!calendarEl) return;
+            var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth', locale: 'zh-tw',
                 events: allEvents.map(e => ({ title: e.title, start: e.date, id: e.id, backgroundColor: '#1d4ed8' })),
                 eventClick: function(info) { openEvent(info.event.id); }
